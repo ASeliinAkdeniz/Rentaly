@@ -28,9 +28,13 @@ EF Core Code First: Veri tabanı tasarımı ve ilişkileri C# sınıfları üzer
 🛠️ Kullanılan Teknolojiler
 
 Backend: .NET 8 (ASP.NET Core MVC)
+
 Veri Tabanı & ORM: SQL Server & Entity Framework Core
+
 Dönüşümler & Mail: AutoMapper & Gmail SMTP (System.Net.Mail)
+
 OCR (Kimlik Okuma): Tesseract.js (Tarayıcı tabanlı)
+
 Frontend & UI: Bootstrap 5, MDB UI, Tabler Icons, Jarallax (Parallax), Owl Carousel
 
 
