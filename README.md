@@ -4,43 +4,33 @@ ASP.NET Core MVC mimarisiyle geliştirilmiş, hem son kullanıcıların araç ki
 
 🚀 Öne Çıkan Özellikler
 Müşteri Arayüzü
+
 Akıllı Filtreleme ve Müsaitlik: Tarih, lokasyon, marka ve kategoriye göre dinamik arama. Seçilen tarihlerde çakışan rezervasyonu olan araçlar otomatik elenir.
-
 Yapay Zeka Destekli OCR: Tesseract.js ile kimlik fotoğrafından (dosya veya kamera) isim ve soyisim bilgilerini otomatik okuyarak form alanına doldurma.
-
 Hızlı ve Standart Rezervasyon: Anlık fiyat hesaplama ve e-posta adresi üzerinden çift kayıt önleme (deduplikasyon) mekanizması.
 
 Admin Paneli (Area)
+
 Dashboard: Toplam araç, rezervasyon, müşteri ve ciro istatistikleri; kategoriye/şubeye göre araç dağılım grafikleri.
-
 Filo ve Müşteri Yönetimi: Araç (kart/liste görünümü, pagination, filtreleme), Marka, Model, Kategori, Şube ve DTO katmanlı Müşteri yönetimi.
-
 Rezervasyon Onay Akışı: Onayla/Reddet sistemi; onay durumunda müşteriye otomatik HTML bilgilendirme maili ve indirim kuponu gönderimi.
-
 İçerik Yönetimi: Ana sayfadaki tüm alanların (İşleyiş adımları, İstatistikler, Ödüller, Yorumlar, SSS) modal tabanlı CRUD yönetimi.
 
 🏗️ Mimari Yapı ve Tasarım Desenleri
+
 Proje, kurumsal yazılım standartlarına uygun olarak 5 Katmanlı Mimari (N-Tier) yapısıyla tasarlanmıştır:
-
 Katmanlar: EntityLayer | DataAccessLayer | BusinessLayer | DTOLayer | WebUI
-
 Repository Pattern: Kod tekrarını önlemek için asenkron ve T önekli (TGetListAsync, TInsertAsync vb.) Generic Repository yapısı.
-
 Unit of Work: Veri tabanı işlemlerinde veri tutarlılığını sağlamak için transaction yönetimi.
-
 AutoMapper: Müşteri kayıt süreçlerinde DTO ve Entity eşlemeleri için otomatik mapping.
-
 EF Core Code First: Veri tabanı tasarımı ve ilişkileri C# sınıfları üzerinden yönetilmiştir.
 
 🛠️ Kullanılan Teknolojiler
+
 Backend: .NET 8 (ASP.NET Core MVC)
-
 Veri Tabanı & ORM: SQL Server & Entity Framework Core
-
 Dönüşümler & Mail: AutoMapper & Gmail SMTP (System.Net.Mail)
-
 OCR (Kimlik Okuma): Tesseract.js (Tarayıcı tabanlı)
-
 Frontend & UI: Bootstrap 5, MDB UI, Tabler Icons, Jarallax (Parallax), Owl Carousel
 
 
