@@ -1,4 +1,5 @@
-Rentaly — Araç Kiralama Yönetim Sistemi
+RENTALY- ARAÇ KİRALAMA YÖNETİM SİSTEMİ
+
 ASP.NET Core MVC mimarisiyle geliştirilmiş, hem son kullanıcıların araç kiralayabildiği şık bir müşteri arayüzü hem de tüm operasyonun yönetilebildiği gelişmiş bir Admin Paneli içeren tam kapsamlı bir araç kiralama web uygulamasıdır.
 
 🚀 Öne Çıkan Özellikler
