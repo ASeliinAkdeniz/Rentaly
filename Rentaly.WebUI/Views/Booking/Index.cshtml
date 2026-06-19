@@ -1,0 +1,302 @@
+﻿@model Rentaly.WebUI.Models.BookingViewModel
+@{
+    ViewData["Title"] = "Rezervasyon - RentCar";
+    Layout = "_UserLayout";
+}
+
+<!-- ═══ SUBHEADER ═══ -->
+<section id="subheader" class="jarallax text-light">
+    <img src="~/images/background/2.jpg" class="jarallax-img" alt="">
+    <div class="center-y relative text-center">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12 text-center">
+                    <h1>Rezervasyon</h1>
+                </div>
+                <div class="clearfix"></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ REZERVASYON FORMU ═══ -->
+<section id="section-hero" aria-label="section" class="no-top" data-bgcolor="#121212">
+    <div class="container">
+        <div class="row align-items-center">
+
+            <div class="col-lg-12 mt-80 sm-mt-0">
+                <div class="spacer-single sm-hide"></div>
+                <div id="booking_form_wrap" class="padding40 rounded-5 shadow-soft" data-bgcolor="#ffffff">
+
+                    @if (TempData["BookingError"] != null)
+                    {
+                        <div class="alert alert-danger mb20">
+                            <i class="fa fa-exclamation-triangle"></i> @TempData["BookingError"]
+                        </div>
+                    }
+
+                    <form asp-controller="Booking" asp-action="SubmitBooking" method="post" class="form-s2 row g-4" id="booking_form">
+
+                        <input type="hidden" name="CarId" value="@Model.Car.CarId" />
+
+                        <!-- SOL: Araç + Tarih Bilgisi -->
+                        <div class="col-lg-6 d-light">
+                            <h4>Rezervasyon Detayları</h4>
+
+                            <div class="p-3 rounded-3 mb20" style="background:#f7f7f7;">
+                                <div class="d-flex align-items-center gap-3">
+                                    @if (!string.IsNullOrEmpty(Model.Car.ImageUrl))
+                                    {
+                                        <img src="@Model.Car.ImageUrl" alt="@Model.Car.PlateNumber" style="width:90px;height:60px;object-fit:cover;border-radius:8px;" />
+                                    }
+                                    <div>
+                                        <h5 class="mb-1">@(Model.Car.Category?.CategoryName ?? "Araç")</h5>
+                                        <span class="d-block text-muted small">@Model.Car.PlateNumber — @Model.Car.Year</span>
+                                        <span class="d-block fw-bold id-color">@Model.Car.DailyPrice.ToString("N0") ₺ / günlük</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row g-4">
+                                <div class="col-lg-6">
+                                    <h5>Alış Şubesi</h5>
+                                    <select name="PickupBranchId" id="PickupBranchId" class="form-control">
+                                        @foreach (var branch in Model.Branches)
+                                        {
+                                            <option value="@branch.BranchId" selected="@(branch.BranchId == Model.PickupBranchId)">
+                                                @branch.BranchName — @branch.City
+                                            </option>
+                                        }
+                                    </select>
+                                </div>
+
+                                <div class="col-lg-6">
+                                    <h5>Teslim Şubesi</h5>
+                                    <select name="ReturnBranchId" id="ReturnBranchId" class="form-control">
+                                        @foreach (var branch in Model.Branches)
+                                        {
+                                            <option value="@branch.BranchId" selected="@(branch.BranchId == Model.ReturnBranchId)">
+                                                @branch.BranchName — @branch.City
+                                            </option>
+                                        }
+                                    </select>
+                                </div>
+
+                                <div class="col-lg-6">
+                                    <h5>Alış Tarihi</h5>
+                                    <input type="date" name="PickupDate" id="PickupDate" class="form-control"
+                                           value="@Model.PickupDate.ToString("yyyy-MM-dd")"
+                                           min="@DateTime.Now.ToString("yyyy-MM-dd")" required>
+                                </div>
+
+                                <div class="col-lg-6">
+                                    <h5>Teslim Tarihi</h5>
+                                    <input type="date" name="ReturnDate" id="ReturnDate" class="form-control"
+                                           value="@Model.ReturnDate.ToString("yyyy-MM-dd")"
+                                           min="@DateTime.Now.ToString("yyyy-MM-dd")" required>
+                                </div>
+                            </div>
+
+                            <div class="p-3 rounded-3 mt20" style="background:#e8f7ee;">
+                                <span class="d-block small text-muted">Tahmini Toplam Ücret</span>
+                                <span class="d-block fw-bold fs-4" id="estimatedPrice">@Model.Car.DailyPrice.ToString("N0") ₺</span>
+                            </div>
+
+                        </div>
+
+                        <!-- SAĞ: Müşteri Bilgileri -->
+                        <div class="col-lg-6">
+                            <h4>Bilgilerinizi Girin</h4>
+
+                            <!-- ═══ KİMLİK İLE OTOMATİK DOLDUR ═══ -->
+                            <div class="p-3 rounded-3 mb20" style="background:#f0f4ff;border:1.5px dashed #b8c8f5;">
+                                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                                    <div>
+                                        <strong><i class="fa fa-id-card id-color"></i> Kimlik ile Otomatik Doldur</strong>
+                                        <p class="small text-muted mb-0 mt-1">Kimliğinizin fotoğrafını yükleyin, adınızı otomatik dolduralım.</p>
+                                    </div>
+                                </div>
+                                <div class="mt10 d-flex gap-2 flex-wrap">
+                                    <label class="btn-line mb-0" style="cursor:pointer;">
+                                        <i class="fa fa-upload"></i> Dosya Seç
+                                        <input type="file" id="idImageInput" accept="image/*" style="display:none;">
+                                    </label>
+                                    <label class="btn-line mb-0" style="cursor:pointer;">
+                                        <i class="fa fa-camera"></i> Kamerayla Çek
+                                        <input type="file" id="idCameraInput" accept="image/*" capture="environment" style="display:none;">
+                                    </label>
+                                </div>
+                                <div id="ocrStatus" class="mt10 small" style="display:none;"></div>
+                                <div id="ocrPreviewWrap" style="display:none;margin-top:10px;">
+                                    <img id="ocrPreviewImg" src="" alt="Kimlik önizleme" style="max-width:160px;border-radius:8px;border:1px solid #ddd;">
+                                </div>
+                            </div>
+
+                            <div class="row g-4">
+                                <div class="col-lg-12">
+                                    <div class="field-set">
+                                        <input type="text" name="Name" id="Name" class="form-control" placeholder="Adınız Soyadınız" required>
+                                    </div>
+                                </div>
+                                <div class="col-lg-12">
+                                    <div class="field-set">
+                                        <input type="email" name="Email" id="Email" class="form-control" placeholder="E-posta Adresiniz" required>
+                                    </div>
+                                </div>
+                                <div class="col-lg-12">
+                                    <div class="field-set">
+                                        <input type="text" name="Phone" id="Phone" class="form-control" placeholder="Telefon Numaranız" required>
+                                    </div>
+                                </div>
+                                <div class="col-lg-12">
+                                    <div class="field-set">
+                                        <textarea name="Message" id="Message" class="form-control" placeholder="Özel bir isteğiniz var mı? (opsiyonel)"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <p class="small text-muted mt20">
+                                <i class="fa fa-info-circle"></i> Rezervasyonunuz admin onayından sonra kesinleşecektir.
+                                Onaylandığında e-posta adresinize bildirim gönderilecektir.
+                            </p>
+                        </div>
+
+                        <div class="col-lg-12">
+                            <button type="submit" id="send_message" class="btn-main btn-fullwidth">
+                                <i class="fa fa-check"></i> Rezervasyonu Tamamla
+                            </button>
+                        </div>
+
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <!-- Tesseract.js - tarayıcı içi OCR -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const pickupInput = document.getElementById('PickupDate');
+            const returnInput = document.getElementById('ReturnDate');
+            const priceLabel = document.getElementById('estimatedPrice');
+            const dailyPrice = @Model.Car.DailyPrice.ToString(System.Globalization.CultureInfo.InvariantCulture);
+
+            function updatePrice() {
+                const pickup = new Date(pickupInput.value);
+                const ret = new Date(returnInput.value);
+                let days = Math.round((ret - pickup) / (1000 * 60 * 60 * 24));
+                if (isNaN(days) || days < 1) days = 1;
+                const total = dailyPrice * days;
+                priceLabel.textContent = total.toLocaleString('tr-TR', { maximumFractionDigits: 0 }) + ' ₺ (' + days + ' gün)';
+            }
+
+            pickupInput.addEventListener('change', function () {
+                returnInput.min = pickupInput.value;
+                if (returnInput.value && returnInput.value <= pickupInput.value) {
+                    const next = new Date(pickupInput.value);
+                    next.setDate(next.getDate() + 1);
+                    returnInput.value = next.toISOString().split('T')[0];
+                }
+                updatePrice();
+            });
+
+            returnInput.addEventListener('change', updatePrice);
+            updatePrice();
+
+            // ══════════════════════════════════════
+            // KİMLİK OCR — Tesseract.js ile metin okuma
+            // ══════════════════════════════════════
+            const idImageInput = document.getElementById('idImageInput');
+            const idCameraInput = document.getElementById('idCameraInput');
+            const ocrStatus = document.getElementById('ocrStatus');
+            const ocrPreviewWrap = document.getElementById('ocrPreviewWrap');
+            const ocrPreviewImg = document.getElementById('ocrPreviewImg');
+            const nameInput = document.getElementById('Name');
+
+            function showStatus(message, type) {
+                ocrStatus.style.display = 'block';
+                ocrStatus.className = 'mt10 small ' + (type === 'error' ? 'text-danger' : type === 'success' ? 'text-success' : 'text-muted');
+                ocrStatus.innerHTML = message;
+            }
+
+            async function processIdImage(file) {
+                if (!file) return;
+
+                // Önizleme göster
+                const reader = new FileReader();
+                reader.onload = e => {
+                    ocrPreviewImg.src = e.target.result;
+                    ocrPreviewWrap.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+
+                showStatus('<i class="fa fa-spinner fa-spin"></i> Kimlik taranıyor, lütfen bekleyin...', 'info');
+
+                try {
+                    const result = await Tesseract.recognize(file, 'tur', {
+                        logger: () => {}
+                    });
+
+                    const text = result.data.text;
+                    const extracted = extractNameFromIdText(text);
+
+                    if (extracted) {
+                        nameInput.value = extracted;
+                        showStatus('<i class="fa fa-check-circle"></i> İsim otomatik dolduruldu. Lütfen kontrol edip gerekirse düzeltin.', 'success');
+                    } else {
+                        showStatus('<i class="fa fa-exclamation-circle"></i> İsim otomatik tespit edilemedi. Lütfen formu elle doldurun.', 'error');
+                    }
+                } catch (err) {
+                    console.error(err);
+                    showStatus('<i class="fa fa-exclamation-circle"></i> Tarama sırasında bir hata oluştu. Lütfen formu elle doldurun.', 'error');
+                }
+            }
+
+            // Türk kimlik kartı metninden ad-soyad çıkarma (basit pattern eşleştirme)
+            function extractNameFromIdText(text) {
+                const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+
+                let surname = null;
+                let name = null;
+
+                for (let i = 0; i < lines.length; i++) {
+                    const line = lines[i].toUpperCase();
+
+                    if (line.includes('SOYADI') || line.includes('SURNAME')) {
+                        const next = lines[i + 1];
+                        if (next) surname = next.trim();
+                    }
+                    if ((line.includes('ADI') && !line.includes('SOYADI')) || line.includes('GIVEN NAME') || line.includes('NAME')) {
+                        const next = lines[i + 1];
+                        if (next) name = next.trim();
+                    }
+                }
+
+                if (name && surname) {
+                    return cleanupOcrText(name) + ' ' + cleanupOcrText(surname);
+                }
+                if (name) return cleanupOcrText(name);
+                if (surname) return cleanupOcrText(surname);
+
+                return null;
+            }
+
+            function cleanupOcrText(str) {
+                return str.replace(/[^A-Za-zÇĞİÖŞÜçğıöşü\s]/g, '').trim();
+            }
+
+            idImageInput.addEventListener('change', function () {
+                if (this.files && this.files[0]) processIdImage(this.files[0]);
+            });
+
+            idCameraInput.addEventListener('change', function () {
+                if (this.files && this.files[0]) processIdImage(this.files[0]);
+            });
+        });
+    </script>
+}

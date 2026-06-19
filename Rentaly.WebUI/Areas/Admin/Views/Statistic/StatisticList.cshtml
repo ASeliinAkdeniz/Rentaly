@@ -1,0 +1,392 @@
+﻿@model List<Rentaly.EntityLayer.Entities.Statistic>
+@{
+    ViewData["Title"] = "İstatistikler";
+    ViewData["ActiveMenu"] = "Statistic";
+    ViewData["BreadcrumbParent"] = "İçerik Yönetimi";
+    Layout = "_AdminLayout";
+}
+
+<style>
+    .stat-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 16px;
+    }
+
+    .stat-content-card {
+        background: #fff;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 20px;
+        text-align: center;
+        transition: var(--transition);
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+        .stat-content-card:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+            border-color: var(--accent2);
+        }
+
+    .stat-icon-circle {
+        width: 52px;
+        height: 52px;
+        background: var(--bg2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--navy);
+        font-size: 22px;
+        margin: 0 auto;
+        overflow: hidden;
+    }
+
+        .stat-icon-circle img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+    .stat-big-value {
+        font-size: 28px;
+        font-weight: 800;
+        color: var(--navy);
+    }
+
+    .stat-content-title {
+        font-size: 13px;
+        color: var(--text-muted);
+        font-weight: 600;
+    }
+
+    .stat-content-actions {
+        display: flex;
+        gap: 6px;
+        padding-top: 8px;
+        border-top: 1px solid var(--bg2);
+        margin-top: 4px;
+    }
+
+    .action-btn-edit {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        background: #fef3c7;
+        color: #92400e;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 7px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all .15s;
+        flex: 1;
+        justify-content: center;
+    }
+
+        .action-btn-edit:hover {
+            background: #f59e0b;
+            color: #fff;
+        }
+
+    .action-btn-delete {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        background: #fee2e2;
+        color: #be123c;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 7px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all .15s;
+    }
+
+        .action-btn-delete:hover {
+            background: var(--danger);
+            color: #fff;
+        }
+
+    .empty-state {
+        padding: 64px 20px;
+        text-align: center;
+        background: #fff;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+    }
+
+    .empty-icon {
+        width: 72px;
+        height: 72px;
+        background: var(--bg2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+        color: var(--navy);
+        margin: 0 auto 18px;
+    }
+</style>
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">İstatistikler</h1>
+        <p class="page-subtitle">Ana sayfada gösterilecek başarı rakamlarını yönetin.</p>
+    </div>
+    <button type="button" class="btn-add" onclick="openCreateModal()">
+        <i class="ti ti-plus"></i> Yeni İstatistik
+    </button>
+</div>
+
+<div class="stats-grid" style="grid-template-columns:repeat(2,1fr);max-width:480px;margin-bottom:22px;">
+    <div class="stat-card">
+        <div class="stat-icon navy"><i class="ti ti-chart-bar"></i></div>
+        <div>
+            <div class="stat-label">Toplam İstatistik</div>
+            <div class="stat-value">@Model.Count()</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon green"><i class="ti ti-sum"></i></div>
+        <div>
+            <div class="stat-label">Toplam Değer</div>
+            <div class="stat-value">@Model.Sum(s => s.Value).ToString("N0")</div>
+        </div>
+    </div>
+</div>
+
+@if (Model.Any())
+{
+    <div class="stat-grid">
+        @foreach (var s in Model)
+        {
+            <div class="stat-content-card">
+                <div class="stat-icon-circle">
+                    @if (!string.IsNullOrEmpty(s.IconUrl))
+                    {
+                        <img src="@s.IconUrl" alt="@s.Title" onerror="this.parentElement.innerHTML='<i class=&quot;ti ti-chart-bar&quot;></i>'" />
+                    }
+                    else
+                    {
+                        <i class="ti ti-chart-bar"></i>
+                    }
+                </div>
+                <div class="stat-big-value">@s.Value.ToString("N0")</div>
+                <div class="stat-content-title">@s.Title</div>
+                <div class="stat-content-actions">
+                    <button type="button" class="action-btn-edit"
+                            onclick="openEditModal(@s.StatisticId, '@Html.Raw(s.Title?.Replace("'", "\\'"))', @s.Value, '@Html.Raw(s.IconUrl)')">
+                        <i class="ti ti-pencil"></i> Düzenle
+                    </button>
+                    <button type="button" class="action-btn-delete"
+                            onclick="openDeleteModal(@s.StatisticId, '@Html.Raw(s.Title?.Replace("'", "\\'"))')">
+                        <i class="ti ti-trash"></i>
+                    </button>
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div class="empty-state">
+        <div class="empty-icon"><i class="ti ti-chart-bar"></i></div>
+        <h6 style="font-weight:700;margin-bottom:6px;color:var(--text-primary);">Henüz İstatistik Eklenmemiş</h6>
+        <p style="font-size:13.5px;color:var(--text-muted);margin-bottom:14px;">Ana sayfada gösterilecek ilk istatistiği ekleyin.</p>
+        <button type="button" onclick="openCreateModal()" class="btn-add">
+            <i class="ti ti-plus"></i> Yeni İstatistik Ekle
+        </button>
+    </div>
+}
+
+<!-- CREATE MODAL -->
+<div class="modal fade" id="createModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:460px;">
+        <div class="modal-content" style="border:none;border-radius:14px;">
+            <div class="modal-header" style="border-bottom:1px solid var(--border);padding:20px 24px;background:var(--bg2);border-radius:14px 14px 0 0;">
+                <div style="display:flex;align-items:center;gap:12px;">
+                    <div style="width:38px;height:38px;background:var(--navy);border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff;">
+                        <i class="ti ti-plus" style="font-size:18px;"></i>
+                    </div>
+                    <div>
+                        <h5 class="modal-title" style="font-size:15px;font-weight:700;color:var(--text-primary);margin:0;">Yeni İstatistik Ekle</h5>
+                        <p style="font-size:11px;color:var(--text-muted);margin:0;">İstatistik bilgilerini girin</p>
+                    </div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="createForm" asp-area="Admin" asp-controller="Statistic" asp-action="CreateStatistic" method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-body" style="padding:24px;">
+                    <div class="mb-3">
+                        <label class="form-label">Başlık <span style="color:var(--danger);">*</span></label>
+                        <input type="text" name="Title" id="createTitle" class="form-control"
+                               placeholder="örn. Mutlu Müşteri" maxlength="100" />
+                        <span id="createTitleError" style="font-size:12px;color:var(--danger);display:none;">
+                            <i class="ti ti-alert-circle"></i> Başlık zorunludur.
+                        </span>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Değer (Sayı) <span style="color:var(--danger);">*</span></label>
+                        <input type="number" name="Value" id="createValue" class="form-control"
+                               placeholder="örn. 5000" min="0" />
+                        <span id="createValueError" style="font-size:12px;color:var(--danger);display:none;">
+                            <i class="ti ti-alert-circle"></i> Değer zorunludur.
+                        </span>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">İkon URL</label>
+                        <input type="text" name="IconUrl" id="createIconUrl" class="form-control"
+                               placeholder="https://example.com/icon.png" />
+                        <p style="font-size:11.5px;color:var(--text-muted);margin-top:5px;">
+                            <i class="ti ti-info-circle" style="color:var(--accent2);"></i> İsteğe bağlı görsel ikon.
+                        </p>
+                    </div>
+                </div>
+                <div class="modal-footer" style="border-top:1px solid var(--border);padding:16px 24px;background:var(--bg2);border-radius:0 0 14px 14px;display:flex;justify-content:flex-end;gap:8px;">
+                    <button type="button" class="btn-edit" data-bs-dismiss="modal">
+                        <i class="ti ti-x"></i> Vazgeç
+                    </button>
+                    <button type="button" class="btn-add" onclick="submitCreate()">
+                        <i class="ti ti-check"></i> Kaydet
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="modal fade" id="editModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:460px;">
+        <div class="modal-content" style="border:none;border-radius:14px;">
+            <div class="modal-header" style="border-bottom:1px solid var(--border);padding:20px 24px;background:var(--bg2);border-radius:14px 14px 0 0;">
+                <div style="display:flex;align-items:center;gap:12px;">
+                    <div style="width:38px;height:38px;background:var(--navy);border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff;">
+                        <i class="ti ti-pencil" style="font-size:18px;"></i>
+                    </div>
+                    <div>
+                        <h5 class="modal-title" style="font-size:15px;font-weight:700;color:var(--text-primary);margin:0;">İstatistik Düzenle</h5>
+                        <p style="font-size:11px;color:var(--text-muted);margin:0;">Bilgileri güncelleyin</p>
+                    </div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form asp-area="Admin" asp-controller="Statistic" asp-action="UpdateStatistic" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" id="editStatisticId" name="StatisticId" />
+                <div class="modal-body" style="padding:24px;">
+                    <div class="mb-3">
+                        <label class="form-label">Başlık <span style="color:var(--danger);">*</span></label>
+                        <input type="text" name="Title" id="editTitle" class="form-control" maxlength="100" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Değer (Sayı) <span style="color:var(--danger);">*</span></label>
+                        <input type="number" name="Value" id="editValue" class="form-control" min="0" />
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">İkon URL</label>
+                        <input type="text" name="IconUrl" id="editIconUrl" class="form-control" />
+                    </div>
+                </div>
+                <div class="modal-footer" style="border-top:1px solid var(--border);padding:16px 24px;background:var(--bg2);border-radius:0 0 14px 14px;display:flex;justify-content:flex-end;gap:8px;">
+                    <button type="button" class="btn-edit" data-bs-dismiss="modal">
+                        <i class="ti ti-x"></i> Vazgeç
+                    </button>
+                    <button type="submit" class="btn-add">
+                        <i class="ti ti-check"></i> Güncelle
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- DELETE MODAL -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:400px;">
+        <div class="modal-content" style="border:none;border-radius:14px;">
+            <div class="modal-header" style="border-bottom:1px solid var(--border);padding:18px 22px;background:var(--bg2);border-radius:14px 14px 0 0;">
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <div style="width:34px;height:34px;background:#fee2e2;border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--danger);">
+                        <i class="ti ti-trash" style="font-size:16px;"></i>
+                    </div>
+                    <h5 class="modal-title" style="font-size:15px;font-weight:700;color:var(--text-primary);margin:0;">İstatistik Sil</h5>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" style="padding:22px;">
+                <div style="display:flex;gap:14px;align-items:flex-start;">
+                    <div style="width:46px;height:46px;background:#fee2e2;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--danger);font-size:20px;flex-shrink:0;">
+                        <i class="ti ti-alert-triangle"></i>
+                    </div>
+                    <div>
+                        <p style="margin:0;font-size:14.5px;color:var(--text-primary);line-height:1.5;">
+                            <strong id="deleteStatTitle">bu istatistiği</strong> silmek istediğinizden emin misiniz?
+                        </p>
+                        <p style="margin:6px 0 0;font-size:13px;color:var(--text-muted);">Bu işlem geri alınamaz.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer" style="border-top:1px solid var(--border);padding:14px 22px;background:var(--bg2);border-radius:0 0 14px 14px;display:flex;justify-content:flex-end;gap:8px;">
+                <button type="button" class="btn-edit" data-bs-dismiss="modal">
+                    <i class="ti ti-x"></i> Vazgeç
+                </button>
+                <form id="deleteForm" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" id="deleteStatId" name="id" />
+                    <button type="submit" style="display:inline-flex;align-items:center;gap:7px;background:var(--danger);color:#fff;border:none;border-radius:9px;padding:9px 22px;font-size:13.5px;font-weight:700;cursor:pointer;">
+                        <i class="ti ti-trash"></i> Evet, Sil
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <script>document.addEventListener('DOMContentLoaded', () => showToast('@TempData["Success"]', 'success'));</script>
+}
+
+<script>
+    function openCreateModal() {
+        document.getElementById('createTitle').value = '';
+        document.getElementById('createValue').value = '';
+        document.getElementById('createIconUrl').value = '';
+        document.getElementById('createTitleError').style.display = 'none';
+        document.getElementById('createValueError').style.display = 'none';
+        new bootstrap.Modal(document.getElementById('createModal')).show();
+    }
+
+    function submitCreate() {
+        const t = document.getElementById('createTitle').value.trim();
+        const v = document.getElementById('createValue').value;
+        document.getElementById('createTitleError').style.display = !t ? 'block' : 'none';
+        document.getElementById('createValueError').style.display = (!v && v !== '0') ? 'block' : 'none';
+        if (!t || (!v && v !== '0')) return;
+        document.getElementById('createForm').submit();
+    }
+
+    function openEditModal(id, title, value, iconUrl) {
+        document.getElementById('editStatisticId').value = id;
+        document.getElementById('editTitle').value = title;
+        document.getElementById('editValue').value = value;
+        document.getElementById('editIconUrl').value = iconUrl || '';
+        new bootstrap.Modal(document.getElementById('editModal')).show();
+    }
+
+    function openDeleteModal(id, title) {
+        document.getElementById('deleteStatTitle').textContent = '"' + title + '"';
+        document.getElementById('deleteStatId').value = id;
+        document.getElementById('deleteForm').action = '/Admin/Statistic/DeleteStatistic/' + id;
+        new bootstrap.Modal(document.getElementById('deleteModal')).show();
+    }
+</script>

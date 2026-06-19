@@ -1,0 +1,200 @@
+﻿@model Rentaly.WebUI.Models.CarListViewModel
+@{
+    ViewData["Title"] = "Araçlar - RentCar";
+    Layout = "_UserLayout";
+}
+<!-- ═══ SUBHEADER ═══ -->
+<section id="subheader" class="jarallax text-light">
+    <img src="~/images/background/2.jpg" class="jarallax-img" alt="">
+    <div class="center-y relative text-center">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12 text-center">
+                    <h1>Araçlarımız</h1>
+                </div>
+                <div class="clearfix"></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ ARAÇ LİSTESİ + FİLTRELER ═══ -->
+<section id="section-cars">
+    <div class="container">
+        <div class="row">
+
+            <!-- Filtre Paneli -->
+            <div class="col-lg-3">
+                <form asp-controller="Car" asp-action="CarList" method="get" id="filterForm">
+
+                    <div class="item_filter_group">
+                        <h4>Lokasyon</h4>
+                        <div class="de_form">
+                            <select name="branchId" class="form-control" asp-items="@(new SelectList(Model.Branches, "BranchId", "BranchName", Model.SelectedBranchId))">
+                                <option value="">Tüm Şubeler</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="item_filter_group">
+                        <h4>Alış / Teslim Tarihi</h4>
+                        <div class="de_form">
+                            <label class="small text-muted">Alış Tarihi</label>
+                            <input type="date" name="pickupDate" class="form-control mb10"
+                                   value="@(Model.PickupDate?.ToString("yyyy-MM-dd"))"
+                                   min="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                            <label class="small text-muted">Teslim Tarihi</label>
+                            <input type="date" name="returnDate" class="form-control"
+                                   value="@(Model.ReturnDate?.ToString("yyyy-MM-dd"))"
+                                   min="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                        </div>
+                    </div>
+
+                    <div class="item_filter_group">
+                        <h4>Marka</h4>
+                        <div class="de_form">
+                            @foreach (var brand in Model.Brands)
+                            {
+                                <div class="de_checkbox">
+                                    <input id="brand_@brand.BrandId" type="radio" name="brandId" value="@brand.BrandId"
+                                           @(Model.SelectedBrandId == brand.BrandId ? "checked" : "") onclick="document.getElementById('filterForm').submit();">
+                                    <label for="brand_@brand.BrandId">@brand.BrandName</label>
+                                </div>
+                            }
+                            @if (Model.SelectedBrandId.HasValue)
+                            {
+                                <div class="de_checkbox">
+                                    <input id="brand_all" type="radio" name="brandId" value=""
+                                           onclick="document.getElementById('filterForm').submit();">
+                                    <label for="brand_all">Tümünü Göster</label>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="item_filter_group">
+                        <h4>Kategori</h4>
+                        <div class="de_form">
+                            @foreach (var category in Model.Categories)
+                            {
+                                <div class="de_checkbox">
+                                    <input id="cat_@category.CategoryId" type="radio" name="categoryId" value="@category.CategoryId"
+                                           @(Model.SelectedCategoryId == category.CategoryId ? "checked" : "") onclick="document.getElementById('filterForm').submit();">
+                                    <label for="cat_@category.CategoryId">@category.CategoryName</label>
+                                </div>
+                            }
+                            @if (Model.SelectedCategoryId.HasValue)
+                            {
+                                <div class="de_checkbox">
+                                    <input id="cat_all" type="radio" name="categoryId" value=""
+                                           onclick="document.getElementById('filterForm').submit();">
+                                    <label for="cat_all">Tümünü Göster</label>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="item_filter_group">
+                        <h4>Fiyat Aralığı (₺)</h4>
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <label class="small text-muted">Min</label>
+                                <input type="number" name="minPrice" class="form-control" placeholder="0"
+                                       value="@Model.MinPrice" min="0">
+                            </div>
+                            <div class="col-6">
+                                <label class="small text-muted">Max</label>
+                                <input type="number" name="maxPrice" class="form-control" placeholder="5000"
+                                       value="@Model.MaxPrice" min="0">
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-main w-100 mt20">
+                        <i class="fa fa-filter"></i> Filtreyi Uygula
+                    </button>
+                    <a asp-controller="Car" asp-action="CarList" class="btn-line w-100 mt10 text-center d-block">
+                        Filtreleri Temizle
+                    </a>
+
+                </form>
+            </div>
+
+            <!-- Araç Kartları -->
+            <div class="col-lg-9">
+
+                <div class="row mb20">
+                    <div class="col-lg-12">
+                        <p class="text-muted">
+                            <strong>@Model.Cars.Count</strong> araç bulundu
+                            @if (Model.PickupDate.HasValue && Model.ReturnDate.HasValue)
+                            {
+                                <span> — @Model.PickupDate.Value.ToString("dd.MM.yyyy") ile @Model.ReturnDate.Value.ToString("dd.MM.yyyy") arasında müsait</span>
+                            }
+                        </p>
+                    </div>
+                </div>
+
+                <div class="row">
+                    @if (Model.Cars.Any())
+                    {
+                        @foreach (var car in Model.Cars)
+                        {
+                            <div class="col-xl-4 col-lg-6">
+                                <div class="de-item mb30">
+                                    <div class="d-img">
+                                        <a asp-controller="Car" asp-action="CarDetail" asp-route-id="@car.CarId">
+                                            @if (!string.IsNullOrEmpty(car.ImageUrl))
+                                            {
+                                                <img src="@car.ImageUrl" class="img-fluid" alt="@car.PlateNumber">
+                                            }
+                                            else
+                                            {
+                                                <img src="~/images/cars/jeep-renegade.jpg" class="img-fluid" alt="">
+                                            }
+                                        </a>
+                                    </div>
+                                    <div class="d-info">
+                                        <div class="d-text">
+                                            <h4>
+                                                <a asp-controller="Car" asp-action="CarDetail" asp-route-id="@car.CarId" style="color:inherit;">
+                                                    @(car.Category?.CategoryName ?? "Araç")
+                                                </a>
+                                            </h4>
+                                            <div class="d-atr-group">
+                                                <span class="d-atr"><i class="fa fa-user"></i>@car.SeatCount</span>
+                                                <span class="d-atr"><i class="fa fa-suitcase"></i>@car.LuggageCount</span>
+                                                <span class="d-atr"><i class="fa fa-cog"></i>@car.FuelType</span>
+                                                <span class="d-atr"><i class="fa fa-calendar"></i>@car.Year</span>
+                                            </div>
+                                            <div class="d-price">
+                                                Günlük <span>@car.DailyPrice.ToString("N0") ₺</span>
+                                                <a class="btn-main"
+                                                   asp-controller="Booking" asp-action="Index"
+                                                   asp-route-carId="@car.CarId"
+                                                   asp-route-pickupDate="@(Model.PickupDate?.ToString("yyyy-MM-dd"))"
+                                                   asp-route-returnDate="@(Model.ReturnDate?.ToString("yyyy-MM-dd"))">
+                                                    Şimdi Kirala
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="col-lg-12 text-center py-5">
+                            <i class="fa fa-search fa-3x text-muted mb-3"></i>
+                            <h4>Kriterlerinize uygun araç bulunamadı</h4>
+                            <p class="text-muted">Lütfen filtrelerinizi değiştirip tekrar deneyin.</p>
+                            <a asp-controller="Car" asp-action="CarList" class="btn-main mt20">Filtreleri Temizle</a>
+                        </div>
+                    }
+                </div>
+
+            </div>
+        </div>
+    </div>
+</section>

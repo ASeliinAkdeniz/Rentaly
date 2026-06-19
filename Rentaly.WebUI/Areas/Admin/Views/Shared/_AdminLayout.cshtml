@@ -1,0 +1,231 @@
+﻿<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] — RentCar Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <link rel="stylesheet" href="~/css/admin.css" />
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body>
+
+    <!-- ========== SIDEBAR ========== -->
+    <aside class="sidebar" id="sidebar">
+
+        <a asp-area="Admin" asp-controller="Dashboard" asp-action="Index" class="sidebar-logo">
+            <div class="logo-mark"><i class="ti ti-car"></i></div>
+            <div class="logo-text">
+                <strong>RentCar</strong>
+                <span>Admin Panel</span>
+            </div>
+        </a>
+
+        <nav class="sb-scroll" id="sidebarNav">
+
+            <!-- Ana Menü -->
+            <div class="menu-label">Ana Menü</div>
+            <a asp-area="Admin" asp-controller="Dashboard" asp-action="Index"
+               class="nav-item @(ViewData["ActiveMenu"]?.ToString() == "Dashboard" ? "active" : "")">
+                <i class="ti ti-layout-dashboard"></i>Dashboard
+            </a>
+
+            <!-- Araç Yönetimi -->
+            <div class="menu-label">Araç Yönetimi</div>
+
+            <a asp-area="Admin" asp-controller="Car" asp-action="CarList"
+               class="nav-item @(ViewData["ActiveMenu"]?.ToString() == "Car" ? "active" : "")">
+                <i class="ti ti-car"></i>Araç Listesi
+            </a>
+
+            <a asp-area="Admin" asp-controller="Car" asp-action="CreateCar"
+               class="nav-item @(ViewData["ActiveMenu"]?.ToString() == "CarCreate" ? "active" : "")">
+                <i class="ti ti-circle-plus"></i>Yeni Araç Ekle
+            </a>
+
+            <div class="sub">
+                <a asp-area="Admin" asp-controller="Brand" asp-action="BrandList"
+                   class="nav-item @(ViewData["ActiveMenu"]?.ToString() == "Brand" ? "active" : "")">
+                    <i class="ti ti-bookmark"></i>Markalar
+                </a>
+                <a asp-area="Admin" asp-controller="CarModel" asp-action="CarModelList"
+                   class="nav-item @(ViewData["ActiveMenu"]?.ToString() == "CarModel" ? "active" : "")">
+                    <i class="ti ti-box"></i>Modeller
+                </a>
+                <a asp-area="Admin" asp-controller="Category" asp-action="CategoryList"
+                   class="nav-item @(ViewData["ActiveMenu"]?.ToString() == "Category" ? "active" : "")">
+                    <i class="ti ti-tag"></i>Kategoriler
+                </a>
+            </div>
+
+            <!-- Operasyon -->
+            <div class="menu-label">Operasyon</div>
+
+            <a asp-area="Admin" asp-controller="Branch" asp-action="BranchList"
+               class="nav-item @(ViewData["ActiveMenu"]?.ToString() == "Branch" ? "active" : "")">
+                <i class="ti ti-building-store"></i>Şubeler
+            </a>
+
+            <a asp-area="Admin" asp-controller="Customer" asp-action="CustomerList"
+               class="nav-item @(ViewData["ActiveMenu"]?.ToString() == "Customer" ? "active" : "")">
+                <i class="ti ti-users"></i>Müşteriler
+            </a>
+
+            <a asp-area="Admin" asp-controller="Rental" asp-action="RentalList"
+               class="nav-item @(ViewData["ActiveMenu"]?.ToString() == "Rental" ? "active" : "")">
+                <i class="ti ti-calendar-check"></i>Rezervasyonlar
+            </a>
+
+            <!-- İçerik Yönetimi -->
+            <div class="menu-label">İçerik Yönetimi</div>
+
+            <a asp-area="Admin" asp-controller="Process" asp-action="ProcessList"
+               class="nav-item @(ViewData["ActiveMenu"]?.ToString() == "Process" ? "active" : "")">
+                <i class="ti ti-list-check"></i>İşleyiş
+            </a>
+
+            <a asp-area="Admin" asp-controller="OurFuture" asp-action="OurFutureList"
+               class="nav-item @(ViewData["ActiveMenu"]?.ToString() == "OurFuture" ? "active" : "")">
+                <i class="ti ti-leaf"></i>Geleceğimiz
+            </a>
+
+            <a asp-area="Admin" asp-controller="Statistic" asp-action="StatisticList"
+               class="nav-item @(ViewData["ActiveMenu"]?.ToString() == "Statistic" ? "active" : "")">
+                <i class="ti ti-chart-bar"></i>İstatistikler
+            </a>
+
+            <a asp-area="Admin" asp-controller="Award" asp-action="AwardList"
+               class="nav-item @(ViewData["ActiveMenu"]?.ToString() == "Award" ? "active" : "")">
+                <i class="ti ti-trophy"></i>Ödüller
+            </a>
+
+            <a asp-area="Admin" asp-controller="Testimonial" asp-action="TestimonialList"
+               class="nav-item @(ViewData["ActiveMenu"]?.ToString() == "Testimonial" ? "active" : "")">
+                <i class="ti ti-message-circle"></i>Testimonial
+            </a>
+
+            <a asp-area="Admin" asp-controller="FAQ" asp-action="FAQList"
+               class="nav-item @(ViewData["ActiveMenu"]?.ToString() == "FAQ" ? "active" : "")">
+                <i class="ti ti-help-circle"></i>SSS
+            </a>
+
+        </nav>
+
+        <div class="sb-footer">
+            <div class="sb-avatar">A</div>
+            <div>
+                <div class="sb-uname">Admin User</div>
+                <div class="sb-urole">Süper Yönetici</div>
+            </div>
+            <div class="sb-more"><i class="ti ti-dots-vertical"></i></div>
+        </div>
+
+    </aside>
+
+    <!-- Overlay (mobile) -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+    <!-- ========== TOP NAVBAR ========== -->
+    <div class="main-wrapper" id="mainWrapper">
+
+        <nav class="topbar" id="topbar">
+            <button class="toggle-btn" id="toggleBtn" onclick="toggleSidebar()">
+                <i class="ti ti-menu-2"></i>
+            </button>
+
+            <div class="tb-left">
+                <div class="tb-title">@(ViewData["Title"] ?? "Dashboard")</div>
+                <div class="tb-crumb">
+                    @if (ViewData["BreadcrumbParent"] != null)
+                    {
+                        <span>@ViewData["BreadcrumbParent"]</span>
+                        <span class="crumb-sep">/</span>
+                    }
+                    <span class="crumb-active">@(ViewData["Title"] ?? "Dashboard")</span>
+                </div>
+            </div>
+
+            <div class="topbar-actions">
+                <div class="icon-btn">
+                    <i class="ti ti-search"></i>
+                </div>
+
+                <div class="icon-btn notif-btn" data-bs-toggle="dropdown">
+                    <i class="ti ti-bell"></i>
+                    <span class="notif-dot"></span>
+                    <ul class="dropdown-menu dropdown-menu-end notif-dropdown">
+                        <div class="notif-header">
+                            <span>Bildirimler</span>
+                            <a href="#">Tümünü Gör</a>
+                        </div>
+                        <div class="notif-list">
+                            <div class="notif-item">
+                                <div class="notif-icon green"><i class="ti ti-calendar-check"></i></div>
+                                <div class="notif-text">
+                                    <p>Yeni rezervasyon talebi</p>
+                                    <small>2 dakika önce</small>
+                                </div>
+                            </div>
+                            <div class="notif-item">
+                                <div class="notif-icon amber"><i class="ti ti-credit-card"></i></div>
+                                <div class="notif-text">
+                                    <p>₺4.200 ödeme alındı</p>
+                                    <small>3 saat önce</small>
+                                </div>
+                            </div>
+                        </div>
+                    </ul>
+                </div>
+
+                <div class="icon-btn">
+                    <i class="ti ti-mail"></i>
+                </div>
+
+                <div class="tb-divider"></div>
+
+                <div class="dropdown">
+                    <div class="tb-admin dropdown-toggle" data-bs-toggle="dropdown">
+                        <img src="https://ui-avatars.com/api/?name=Admin&background=0a5c34&color=fff&size=64" alt="Admin" />
+                        <div class="d-none d-lg-block">
+                            <div class="tb-admin-name">Admin User</div>
+                            <div class="tb-admin-role">Süper Yönetici</div>
+                        </div>
+                        <i class="ti ti-chevron-down"></i>
+                    </div>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="#"><i class="ti ti-user me-2"></i>Profil</a></li>
+                        <li><a class="dropdown-item" href="#"><i class="ti ti-settings me-2"></i>Ayarlar</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger" href="#"><i class="ti ti-logout me-2"></i>Çıkış Yap</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <!-- ========== PAGE CONTENT ========== -->
+        <main class="page-content">
+            @RenderBody()
+        </main>
+
+        <!-- ========== FOOTER ========== -->
+        <footer class="site-footer">
+            <div>© 2026 <strong>RentCar</strong> Yönetim Paneli — Tüm Hakları Saklıdır</div>
+            <div class="footer-links">
+                <a href="#">Gizlilik</a>
+                <a href="#">Koşullar</a>
+                <a href="#">Destek</a>
+            </div>
+        </footer>
+
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" id="toastContainer"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/admin.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

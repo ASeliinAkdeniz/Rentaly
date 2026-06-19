@@ -1,0 +1,191 @@
+﻿@model Rentaly.WebUI.Models.AboutViewModel
+@{
+    ViewData["Title"] = "Hakkımızda - RentCar";
+    Layout = "_UserLayout";
+}
+
+<!-- ═══ SUBHEADER ═══ -->
+<section id="subheader" class="jarallax text-light">
+    <img src="~/images/background/2.jpg" class="jarallax-img" alt="">
+    <div class="center-y relative text-center">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12 text-center">
+                    <h1>Hakkımızda</h1>
+                </div>
+                <div class="clearfix"></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ TANITIM + İSTATİSTİKLER ═══ -->
+<section class="text-light jarallax">
+    <img src="~/images/background/3.jpg" class="jarallax-img" alt="">
+    <div class="container">
+        <div class="row g-5">
+            <div class="col-lg-6 wow fadeInRight">
+                <h2>Her Bütçeye Uygun <span class="id-color">Ticari</span> ve <span class="id-color">Lüks Araçlar</span> Sunuyoruz.</h2>
+            </div>
+            <div class="col-lg-6 wow fadeInLeft">
+                <p>Araç kiralama hizmetimizde, bütçeniz ne olursa olsun herkesin güvenilir ve konforlu bir araç kullanma keyfini yaşamayı hak ettiğine inanıyoruz. Zarif sedanlardan geniş SUV'lara kadar rekabetçi fiyatlarla iyi bakımlı çeşitli araçlardan oluşan bir filo hazırladık.</p>
+                <p>Kolaylaştırılmış kiralama sürecimizle, istediğiniz aracı hızlı ve uygun şekilde rezerve edebilirsiniz. İster iş seyahati ister tatil, size en uygun aracı bulmak için buradayız.</p>
+            </div>
+        </div>
+
+        <div class="spacer-double"></div>
+
+        <!-- İstatistikler — dinamik -->
+        <div class="row text-center">
+            @if (Model.Statistics.Any())
+            {
+                @foreach (var stat in Model.Statistics)
+                {
+                    <div class="col-md-3 col-sm-6 mb-sm-30">
+                        <div class="de_count transparent text-light wow fadeInUp">
+                            <h3 class="timer" data-to="@stat.Value" data-speed="3000">0</h3>
+                            @stat.Title
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="col-md-3 col-sm-6 mb-sm-30">
+                    <div class="de_count transparent text-light wow fadeInUp">
+                        <h3 class="timer" data-to="15425" data-speed="3000">0</h3>
+                        Tamamlanan Sipariş
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6 mb-sm-30">
+                    <div class="de_count transparent text-light wow fadeInUp">
+                        <h3 class="timer" data-to="8745" data-speed="3000">0</h3>
+                        Mutlu Müşteri
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6 mb-sm-30">
+                    <div class="de_count transparent text-light wow fadeInUp">
+                        <h3 class="timer" data-to="235" data-speed="3000">0</h3>
+                        Araç Filosu
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6 mb-sm-30">
+                    <div class="de_count transparent text-light wow fadeInUp">
+                        <h3 class="timer" data-to="15" data-speed="3000">0</h3>
+                        Yıllık Tecrübe
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+<!-- ═══ ÖZELLİKLERİMİZ ═══ -->
+<section aria-label="section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6 offset-lg-3 text-center">
+                <h2>Neden Bizi Seçmelisiniz?</h2>
+                <p>Konfor, güvenlik ve esnekliği bir arada sunan araç kiralama deneyimi için doğru adrestesiniz.</p>
+                <div class="spacer-20"></div>
+            </div>
+            <div class="clearfix"></div>
+            <div class="col-lg-3">
+                <div class="box-icon s2 p-small mb20 wow fadeInRight" data-wow-delay=".5s">
+                    <i class="fa bg-color fa-trophy"></i>
+                    <div class="d-inner">
+                        <h4>Birinci Sınıf Hizmet</h4>
+                        Lüksün özenli hizmetle buluştuğu, beklentilerinizin her zaman aşıldığı unutulmaz anlar.
+                    </div>
+                </div>
+                <div class="box-icon s2 p-small mb20 wow fadeInRight" data-wow-delay=".75s">
+                    <i class="fa bg-color fa-road"></i>
+                    <div class="d-inner">
+                        <h4>7/24 Yol Yardımı</h4>
+                        İhtiyacınız olduğunda güvenilir destek, sizi yolda tutarak içiniz rahat eder.
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <img src="~/images/misc/car-2.png" alt="" class="img-fluid wow fadeInUp">
+            </div>
+            <div class="col-lg-3">
+                <div class="box-icon s2 d-invert p-small mb20 wow fadeInLeft" data-wow-delay="1s">
+                    <i class="fa bg-color fa-tag"></i>
+                    <div class="d-inner">
+                        <h4>Minimum Maliyetle Kalite</h4>
+                        Kaliteyi yükseltirken maliyetleri en aza indiren, erişilebilir mükemmellik.
+                    </div>
+                </div>
+                <div class="box-icon s2 d-invert p-small mb20 wow fadeInLeft" data-wow-delay="1.25s">
+                    <i class="fa bg-color fa-map-pin"></i>
+                    <div class="d-inner">
+                        <h4>Ücretsiz Alış & Teslim</h4>
+                        Ücretsiz alış ve teslim hizmetiyle araç kiralama deneyiminize kolaylık katın.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ GELECEĞİMİZ — dinamik ═══ -->
+@if (Model.OurFutures.Any())
+{
+    <section aria-label="section" data-bgcolor="#f7f7f7">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6 offset-lg-3 text-center">
+                    <h2>Geleceğimiz</h2>
+                    <p>Daha sürdürülebilir ve yenilikçi bir araç kiralama deneyimi için attığımız adımlar.</p>
+                    <div class="spacer-20"></div>
+                </div>
+            </div>
+            <div class="row g-4">
+                @foreach (var future in Model.OurFutures)
+                {
+                    <div class="col-lg-4 col-md-6">
+                        <div class="de-item mb30">
+                            <div class="d-img">
+                                @if (!string.IsNullOrEmpty(future.ImageUrl))
+                                {
+                                    <img src="@future.ImageUrl" class="img-fluid" alt="@future.Title">
+                                }
+                                else
+                                {
+                                    <img src="~/images/misc/e2.jpg" class="img-fluid" alt="">
+                                }
+                            </div>
+                            <div class="d-info">
+                                <div class="d-text">
+                                    <h4>@future.Title</h4>
+                                    <p>@future.Description</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </section>
+}
+
+<!-- ═══ ÇAĞRI ALANI ═══ -->
+<section id="section-call-to-action" class="bg-color-2 pt60 pb60 text-light">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-4 offset-lg-2">
+                <span class="subtitle text-white">Daha fazla bilgi için bizi arayın</span>
+                <h2 class="s2">RentCar müşteri hizmetleri her zaman yardımınıza hazır.</h2>
+            </div>
+            <div class="col-lg-4 text-lg-center text-sm-center">
+                <div class="phone-num-big">
+                    <i class="fa fa-phone"></i>
+                    <span class="pnb-text">Bizi Arayın</span>
+                    <span class="pnb-num">0850 123 45 67</span>
+                </div>
+                <a asp-controller="Home" asp-action="Contact" class="btn-main">İletişime Geçin</a>
+            </div>
+        </div>
+    </div>
+</section>

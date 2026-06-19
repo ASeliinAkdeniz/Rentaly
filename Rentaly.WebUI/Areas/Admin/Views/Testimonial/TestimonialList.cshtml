@@ -1,0 +1,512 @@
+﻿@model List<Rentaly.EntityLayer.Entities.Testimonial>
+@{
+    ViewData["Title"] = "Testimonial";
+    ViewData["ActiveMenu"] = "Testimonial";
+    ViewData["BreadcrumbParent"] = "İçerik Yönetimi";
+    Layout = "_AdminLayout";
+}
+
+<style>
+    .test-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+        gap: 16px;
+    }
+
+    .test-card {
+        background: #fff;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 18px;
+        transition: var(--transition);
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+        .test-card:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+            border-color: var(--accent2);
+        }
+
+    .test-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .test-avatar {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--navy), var(--accent2));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-weight: 800;
+        font-size: 15px;
+        flex-shrink: 0;
+        overflow: hidden;
+    }
+
+        .test-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+    .test-name {
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+
+    .test-stars {
+        display: flex;
+        gap: 2px;
+        margin-top: 2px;
+    }
+
+        .test-stars i {
+            font-size: 13px;
+            color: #f59e0b;
+        }
+
+            .test-stars i.empty {
+                color: var(--border);
+            }
+
+    .test-comment {
+        font-size: 12.5px;
+        color: var(--text-muted);
+        line-height: 1.6;
+        flex: 1;
+        font-style: italic;
+    }
+
+    .test-actions {
+        display: flex;
+        gap: 8px;
+        padding-top: 10px;
+        border-top: 1px solid var(--bg2);
+    }
+
+    .action-btn-edit {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        background: #fef3c7;
+        color: #92400e;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 7px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all .15s;
+        flex: 1;
+        justify-content: center;
+    }
+
+        .action-btn-edit:hover {
+            background: #f59e0b;
+            color: #fff;
+        }
+
+    .action-btn-delete {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        background: #fee2e2;
+        color: #be123c;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 7px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all .15s;
+    }
+
+        .action-btn-delete:hover {
+            background: var(--danger);
+            color: #fff;
+        }
+
+    .empty-state {
+        padding: 64px 20px;
+        text-align: center;
+        background: #fff;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+    }
+
+    .empty-icon {
+        width: 72px;
+        height: 72px;
+        background: var(--bg2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+        color: var(--navy);
+        margin: 0 auto 18px;
+    }
+
+    .star-picker {
+        display: flex;
+        gap: 4px;
+    }
+
+        .star-picker i {
+            font-size: 24px;
+            color: var(--border);
+            cursor: pointer;
+            transition: color .15s;
+        }
+
+            .star-picker i.active {
+                color: #f59e0b;
+            }
+
+    .img-preview-wrap {
+        display: none;
+        margin-top: 8px;
+        border-radius: 50%;
+        overflow: hidden;
+        border: 1px solid var(--border);
+        width: 70px;
+        height: 70px;
+    }
+
+        .img-preview-wrap img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+</style>
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Müşteri Yorumları</h1>
+        <p class="page-subtitle">Ana sayfada gösterilecek müşteri yorumlarını yönetin.</p>
+    </div>
+    <button type="button" class="btn-add" onclick="openCreateModal()">
+        <i class="ti ti-plus"></i> Yeni Yorum
+    </button>
+</div>
+
+<div class="stats-grid" style="grid-template-columns:repeat(2,1fr);max-width:480px;margin-bottom:22px;">
+    <div class="stat-card">
+        <div class="stat-icon navy"><i class="ti ti-message-circle"></i></div>
+        <div>
+            <div class="stat-label">Toplam Yorum</div>
+            <div class="stat-value">@Model.Count()</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon amber"><i class="ti ti-star"></i></div>
+        <div>
+            <div class="stat-label">Ortalama Puan</div>
+            <div class="stat-value">@(Model.Any() ? Model.Average(t => t.Rating).ToString("F1") : "—")</div>
+        </div>
+    </div>
+</div>
+
+@if (Model.Any())
+{
+    <div class="test-grid">
+        @foreach (var t in Model)
+        {
+            var initials = string.IsNullOrEmpty(t.CustomerName) ? "?" : t.CustomerName.Substring(0, 1).ToUpper();
+            <div class="test-card">
+                <div class="test-header">
+                    <div class="test-avatar">
+                        @if (!string.IsNullOrEmpty(t.ImageUrl))
+                        {
+                            <img src="@t.ImageUrl" alt="@t.CustomerName" onerror="this.parentElement.textContent='@initials'" />
+                        }
+                        else
+                        {
+                            @initials
+                        }
+                    </div>
+                    <div>
+                        <div class="test-name">@t.CustomerName</div>
+                        <div class="test-stars">
+                            @for (int i = 1; i <= 5; i++)
+                            {
+                                <i class="ti ti-star-filled @(i > t.Rating ? "empty" : "")"></i>
+                            }
+                        </div>
+                    </div>
+                </div>
+                <div class="test-comment">"@t.Comment"</div>
+                <div class="test-actions">
+                    <button type="button" class="action-btn-edit"
+                            data-id="@t.TestimonialId"
+                            data-name="@t.CustomerName"
+                            data-comment="@t.Comment"
+                            data-image="@t.ImageUrl"
+                            data-rating="@t.Rating"
+                            onclick="openEditModalFromBtn(this)">
+                        <i class="ti ti-pencil"></i> Düzenle
+                    </button>
+                    <button type="button" class="action-btn-delete"
+                            data-id="@t.TestimonialId"
+                            data-name="@t.CustomerName"
+                            onclick="openDeleteModalFromBtn(this)">
+                        <i class="ti ti-trash"></i>
+                    </button>
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div class="empty-state">
+        <div class="empty-icon"><i class="ti ti-message-circle"></i></div>
+        <h6 style="font-weight:700;margin-bottom:6px;color:var(--text-primary);">Henüz Yorum Eklenmemiş</h6>
+        <p style="font-size:13.5px;color:var(--text-muted);margin-bottom:14px;">Ana sayfada gösterilecek ilk müşteri yorumunu ekleyin.</p>
+        <button type="button" onclick="openCreateModal()" class="btn-add">
+            <i class="ti ti-plus"></i> Yeni Yorum Ekle
+        </button>
+    </div>
+}
+
+<!-- CREATE MODAL -->
+<div class="modal fade" id="createModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:480px;">
+        <div class="modal-content" style="border:none;border-radius:14px;">
+            <div class="modal-header" style="border-bottom:1px solid var(--border);padding:20px 24px;background:var(--bg2);border-radius:14px 14px 0 0;">
+                <div style="display:flex;align-items:center;gap:12px;">
+                    <div style="width:38px;height:38px;background:var(--navy);border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff;">
+                        <i class="ti ti-plus" style="font-size:18px;"></i>
+                    </div>
+                    <div>
+                        <h5 class="modal-title" style="font-size:15px;font-weight:700;color:var(--text-primary);margin:0;">Yeni Yorum Ekle</h5>
+                        <p style="font-size:11px;color:var(--text-muted);margin:0;">Müşteri yorumu bilgilerini girin</p>
+                    </div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="createForm" asp-area="Admin" asp-controller="Testimonial" asp-action="CreateTestimonial" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="Rating" id="createRating" value="5" />
+                <div class="modal-body" style="padding:24px;">
+                    <div class="mb-3">
+                        <label class="form-label">Müşteri Adı <span style="color:var(--danger);">*</span></label>
+                        <input type="text" name="CustomerName" id="createCustomerName" class="form-control"
+                               placeholder="örn. Ahmet Yılmaz" maxlength="100" />
+                        <span id="createNameError" style="font-size:12px;color:var(--danger);display:none;">
+                            <i class="ti ti-alert-circle"></i> Müşteri adı zorunludur.
+                        </span>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Yorum <span style="color:var(--danger);">*</span></label>
+                        <textarea name="Comment" id="createComment" class="form-control" rows="3"
+                                  placeholder="Müşterinin yorumunu yazın…" maxlength="400"></textarea>
+                        <span id="createCommentError" style="font-size:12px;color:var(--danger);display:none;">
+                            <i class="ti ti-alert-circle"></i> Yorum zorunludur.
+                        </span>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Puan</label>
+                        <div class="star-picker" id="createStarPicker">
+                            <i class="ti ti-star-filled active" data-val="1" onclick="setRating('create', 1)"></i>
+                            <i class="ti ti-star-filled active" data-val="2" onclick="setRating('create', 2)"></i>
+                            <i class="ti ti-star-filled active" data-val="3" onclick="setRating('create', 3)"></i>
+                            <i class="ti ti-star-filled active" data-val="4" onclick="setRating('create', 4)"></i>
+                            <i class="ti ti-star-filled active" data-val="5" onclick="setRating('create', 5)"></i>
+                        </div>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Fotoğraf URL</label>
+                        <input type="text" name="ImageUrl" id="createImageUrl" class="form-control"
+                               placeholder="https://example.com/avatar.jpg" oninput="previewImg(this.value, 'createPreview')" />
+                        <div class="img-preview-wrap" id="createPreviewWrap">
+                            <img id="createPreview" src="" alt="Önizleme" />
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer" style="border-top:1px solid var(--border);padding:16px 24px;background:var(--bg2);border-radius:0 0 14px 14px;display:flex;justify-content:flex-end;gap:8px;">
+                    <button type="button" class="btn-edit" data-bs-dismiss="modal">
+                        <i class="ti ti-x"></i> Vazgeç
+                    </button>
+                    <button type="button" class="btn-add" onclick="submitCreate()">
+                        <i class="ti ti-check"></i> Kaydet
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="modal fade" id="editModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:480px;">
+        <div class="modal-content" style="border:none;border-radius:14px;">
+            <div class="modal-header" style="border-bottom:1px solid var(--border);padding:20px 24px;background:var(--bg2);border-radius:14px 14px 0 0;">
+                <div style="display:flex;align-items:center;gap:12px;">
+                    <div style="width:38px;height:38px;background:var(--navy);border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff;">
+                        <i class="ti ti-pencil" style="font-size:18px;"></i>
+                    </div>
+                    <div>
+                        <h5 class="modal-title" style="font-size:15px;font-weight:700;color:var(--text-primary);margin:0;">Yorum Düzenle</h5>
+                        <p style="font-size:11px;color:var(--text-muted);margin:0;">Bilgileri güncelleyin</p>
+                    </div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form asp-area="Admin" asp-controller="Testimonial" asp-action="UpdateTestimonial" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" id="editTestimonialId" name="TestimonialId" />
+                <input type="hidden" name="Rating" id="editRating" value="5" />
+                <div class="modal-body" style="padding:24px;">
+                    <div class="mb-3">
+                        <label class="form-label">Müşteri Adı <span style="color:var(--danger);">*</span></label>
+                        <input type="text" name="CustomerName" id="editCustomerName" class="form-control" maxlength="100" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Yorum <span style="color:var(--danger);">*</span></label>
+                        <textarea name="Comment" id="editComment" class="form-control" rows="3" maxlength="400"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Puan</label>
+                        <div class="star-picker" id="editStarPicker">
+                            <i class="ti ti-star-filled" data-val="1" onclick="setRating('edit', 1)"></i>
+                            <i class="ti ti-star-filled" data-val="2" onclick="setRating('edit', 2)"></i>
+                            <i class="ti ti-star-filled" data-val="3" onclick="setRating('edit', 3)"></i>
+                            <i class="ti ti-star-filled" data-val="4" onclick="setRating('edit', 4)"></i>
+                            <i class="ti ti-star-filled" data-val="5" onclick="setRating('edit', 5)"></i>
+                        </div>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Fotoğraf URL</label>
+                        <input type="text" name="ImageUrl" id="editImageUrl" class="form-control"
+                               oninput="previewImg(this.value, 'editPreview')" />
+                        <div class="img-preview-wrap" id="editPreviewWrap">
+                            <img id="editPreview" src="" alt="Önizleme" />
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer" style="border-top:1px solid var(--border);padding:16px 24px;background:var(--bg2);border-radius:0 0 14px 14px;display:flex;justify-content:flex-end;gap:8px;">
+                    <button type="button" class="btn-edit" data-bs-dismiss="modal">
+                        <i class="ti ti-x"></i> Vazgeç
+                    </button>
+                    <button type="submit" class="btn-add">
+                        <i class="ti ti-check"></i> Güncelle
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- DELETE MODAL -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:400px;">
+        <div class="modal-content" style="border:none;border-radius:14px;">
+            <div class="modal-header" style="border-bottom:1px solid var(--border);padding:18px 22px;background:var(--bg2);border-radius:14px 14px 0 0;">
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <div style="width:34px;height:34px;background:#fee2e2;border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--danger);">
+                        <i class="ti ti-trash" style="font-size:16px;"></i>
+                    </div>
+                    <h5 class="modal-title" style="font-size:15px;font-weight:700;color:var(--text-primary);margin:0;">Yorum Sil</h5>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" style="padding:22px;">
+                <div style="display:flex;gap:14px;align-items:flex-start;">
+                    <div style="width:46px;height:46px;background:#fee2e2;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--danger);font-size:20px;flex-shrink:0;">
+                        <i class="ti ti-alert-triangle"></i>
+                    </div>
+                    <div>
+                        <p style="margin:0;font-size:14.5px;color:var(--text-primary);line-height:1.5;">
+                            <strong id="deleteTestName">bu yorumu</strong> silmek istediğinizden emin misiniz?
+                        </p>
+                        <p style="margin:6px 0 0;font-size:13px;color:var(--text-muted);">Bu işlem geri alınamaz.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer" style="border-top:1px solid var(--border);padding:14px 22px;background:var(--bg2);border-radius:0 0 14px 14px;display:flex;justify-content:flex-end;gap:8px;">
+                <button type="button" class="btn-edit" data-bs-dismiss="modal">
+                    <i class="ti ti-x"></i> Vazgeç
+                </button>
+                <form id="deleteForm" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" id="deleteTestId" name="id" />
+                    <button type="submit" style="display:inline-flex;align-items:center;gap:7px;background:var(--danger);color:#fff;border:none;border-radius:9px;padding:9px 22px;font-size:13.5px;font-weight:700;cursor:pointer;">
+                        <i class="ti ti-trash"></i> Evet, Sil
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <script>document.addEventListener('DOMContentLoaded', () => showToast('@TempData["Success"]', 'success'));</script>
+}
+
+<script>
+    function previewImg(url, imgId) {
+        const wrap = document.getElementById(imgId + 'Wrap');
+        const img  = document.getElementById(imgId);
+        if (!url) { wrap.style.display = 'none'; return; }
+        img.src = url;
+        img.onload  = () => wrap.style.display = 'block';
+        img.onerror = () => wrap.style.display = 'none';
+    }
+
+    function setRating(prefix, val) {
+        document.getElementById(prefix + 'Rating').value = val;
+        document.querySelectorAll('#' + prefix + 'StarPicker i').forEach(s => {
+            s.classList.toggle('active', parseInt(s.dataset.val) <= val);
+        });
+    }
+
+    function openCreateModal() {
+        document.getElementById('createCustomerName').value = '';
+        document.getElementById('createComment').value      = '';
+        document.getElementById('createImageUrl').value     = '';
+        document.getElementById('createPreviewWrap').style.display = 'none';
+        document.getElementById('createNameError').style.display   = 'none';
+        document.getElementById('createCommentError').style.display = 'none';
+        setRating('create', 5);
+        new bootstrap.Modal(document.getElementById('createModal')).show();
+    }
+
+    function submitCreate() {
+        const n = document.getElementById('createCustomerName').value.trim();
+        const c = document.getElementById('createComment').value.trim();
+        document.getElementById('createNameError').style.display    = !n ? 'block' : 'none';
+        document.getElementById('createCommentError').style.display = !c ? 'block' : 'none';
+        if (!n || !c) return;
+        document.getElementById('createForm').submit();
+    }
+
+    // data-* attribute'larından modal doldurma — özel karakter sorunu yok
+    function openEditModalFromBtn(btn) {
+        document.getElementById('editTestimonialId').value = btn.dataset.id;
+        document.getElementById('editCustomerName').value  = btn.dataset.name;
+        document.getElementById('editComment').value       = btn.dataset.comment;
+        document.getElementById('editImageUrl').value      = btn.dataset.image || '';
+        previewImg(btn.dataset.image, 'editPreview');
+        setRating('edit', parseInt(btn.dataset.rating) || 5);
+        new bootstrap.Modal(document.getElementById('editModal')).show();
+    }
+
+    function openDeleteModalFromBtn(btn) {
+        document.getElementById('deleteTestName').textContent = '"' + btn.dataset.name + '"';
+        document.getElementById('deleteTestId').value         = btn.dataset.id;
+        document.getElementById('deleteForm').action          = '/Admin/Testimonial/DeleteTestimonial/' + btn.dataset.id;
+        new bootstrap.Modal(document.getElementById('deleteModal')).show();
+    }
+</script>

@@ -1,0 +1,482 @@
+﻿@model List<Rentaly.EntityLayer.Entities.Rental>
+@using Rentaly.EntityLayer.Entities
+@{
+    ViewData["Title"] = "Rezervasyonlar";
+    ViewData["ActiveMenu"] = "Rental";
+    ViewData["BreadcrumbParent"] = "Operasyon";
+    Layout = "_AdminLayout";
+
+    var customers = ViewBag.Customers as List<Customer> ?? new List<Customer>();
+    var cars = ViewBag.Cars as List<Car> ?? new List<Car>();
+    var branches = ViewBag.Branches as List<Branch> ?? new List<Branch>();
+}
+
+<style>
+    .rental-toolbar {
+        background: #fff;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 14px 18px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-bottom: 20px;
+    }
+
+    .filter-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 7px 14px;
+        border-radius: 20px;
+        border: 1.5px solid var(--border);
+        background: #fff;
+        font-size: 12.5px;
+        font-weight: 600;
+        color: var(--text-muted);
+        cursor: pointer;
+        transition: var(--transition);
+    }
+
+        .filter-chip:hover, .filter-chip.active {
+            background: var(--bg2);
+            border-color: var(--accent2);
+            color: var(--accent2);
+        }
+
+    .rental-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .rental-card {
+        background: #fff;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 18px 20px;
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        transition: var(--transition);
+        flex-wrap: wrap;
+    }
+
+        .rental-card:hover {
+            box-shadow: var(--shadow-md);
+        }
+
+        .rental-card.pending {
+            border-left: 4px solid #f59e0b;
+        }
+
+        .rental-card.approved {
+            border-left: 4px solid #10a05a;
+        }
+
+        .rental-card.rejected {
+            border-left: 4px solid #e53e3e;
+        }
+
+    .rental-id-badge {
+        width: 44px;
+        height: 44px;
+        background: var(--bg2);
+        color: var(--navy);
+        border-radius: 11px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+        font-weight: 800;
+        flex-shrink: 0;
+    }
+
+    .rental-info {
+        flex: 1;
+        min-width: 240px;
+    }
+
+    .rental-customer {
+        font-size: 14.5px;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 4px;
+    }
+
+    .rental-meta-row {
+        display: flex;
+        gap: 14px;
+        flex-wrap: wrap;
+        font-size: 12.5px;
+        color: var(--text-muted);
+    }
+
+        .rental-meta-row span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .rental-meta-row i {
+            font-size: 13px;
+            color: var(--accent2);
+        }
+
+    .rental-price {
+        font-size: 17px;
+        font-weight: 800;
+        color: var(--navy);
+        white-space: nowrap;
+        text-align: right;
+    }
+
+    .rental-price-label {
+        font-size: 10.5px;
+        color: var(--text-muted);
+        text-align: right;
+    }
+
+    .rental-actions {
+        display: flex;
+        gap: 8px;
+        flex-shrink: 0;
+    }
+
+    .btn-approve {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: var(--btn-green);
+        color: #fff;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-size: 12.5px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: var(--transition);
+    }
+
+        .btn-approve:hover {
+            background: var(--btn-green-hover);
+        }
+
+    .btn-reject {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #fee2e2;
+        color: var(--danger);
+        border: none;
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-size: 12.5px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: var(--transition);
+    }
+
+        .btn-reject:hover {
+            background: var(--danger);
+            color: #fff;
+        }
+
+    .btn-del-rental {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        background: var(--bg2);
+        color: var(--text-muted);
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: var(--transition);
+    }
+
+        .btn-del-rental:hover {
+            background: var(--danger);
+            color: #fff;
+        }
+
+    .empty-state {
+        padding: 64px 20px;
+        text-align: center;
+        background: #fff;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+    }
+
+    .empty-icon {
+        width: 72px;
+        height: 72px;
+        background: var(--bg2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+        color: var(--navy);
+        margin: 0 auto 18px;
+    }
+</style>
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Rezervasyon Yönetimi</h1>
+        <p class="page-subtitle">Müşteri rezervasyonlarını onaylayın, reddedin veya görüntüleyin.</p>
+    </div>
+</div>
+
+<div class="stats-grid" style="margin-bottom:22px;">
+    <div class="stat-card">
+        <div class="stat-icon navy"><i class="ti ti-calendar-check"></i></div>
+        <div>
+            <div class="stat-label">Toplam Rezervasyon</div>
+            <div class="stat-value">@Model.Count()</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon amber"><i class="ti ti-clock"></i></div>
+        <div>
+            <div class="stat-label">Bekleyen</div>
+            <div class="stat-value">@Model.Count(r => r.Status == "Beklemede")</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon green"><i class="ti ti-circle-check"></i></div>
+        <div>
+            <div class="stat-label">Onaylanan</div>
+            <div class="stat-value">@Model.Count(r => r.Status == "Onaylandı")</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon rose"><i class="ti ti-circle-x"></i></div>
+        <div>
+            <div class="stat-label">Reddedilen</div>
+            <div class="stat-value">@Model.Count(r => r.Status == "Reddedildi")</div>
+        </div>
+    </div>
+</div>
+
+<div class="rental-toolbar">
+    <button type="button" class="filter-chip active" data-status="all" onclick="setStatusFilter(this, 'all')">
+        <i class="ti ti-list"></i> Tümü
+    </button>
+    <button type="button" class="filter-chip" data-status="Beklemede" onclick="setStatusFilter(this, 'Beklemede')">
+        <i class="ti ti-clock"></i> Bekleyen
+    </button>
+    <button type="button" class="filter-chip" data-status="Onaylandı" onclick="setStatusFilter(this, 'Onaylandı')">
+        <i class="ti ti-circle-check"></i> Onaylanan
+    </button>
+    <button type="button" class="filter-chip" data-status="Reddedildi" onclick="setStatusFilter(this, 'Reddedildi')">
+        <i class="ti ti-circle-x"></i> Reddedilen
+    </button>
+</div>
+
+@if (Model.Any())
+{
+    <div class="rental-list" id="rentalList">
+        @foreach (var r in Model)
+        {
+            var customer = customers.FirstOrDefault(c => c.CustomerId == r.CustomerId);
+            var car = cars.FirstOrDefault(c => c.CarId == r.CarId);
+            var pickupBranch = branches.FirstOrDefault(b => b.BranchId == r.PickupBranchId);
+            var returnBranch = branches.FirstOrDefault(b => b.BranchId == r.ReturnBranchId);
+
+            var statusClass = r.Status switch
+            {
+                "Onaylandı" => "approved",
+                "Reddedildi" => "rejected",
+                _ => "pending"
+            };
+            var badgeClass = r.Status switch
+            {
+                "Onaylandı" => "green",
+                "Reddedildi" => "red",
+                _ => "amber"
+            };
+
+            var customerName = customer != null ? $"{customer.Name} {customer.Surname}" : "Bilinmeyen Müşteri";
+            var carInfo = car != null ? $"{car.Category?.CategoryName ?? "Araç"} — {car.PlateNumber}" : "Bilinmeyen Araç";
+
+            <div class="rental-card @statusClass" data-status="@r.Status">
+                <div class="rental-id-badge">#@r.RentalId</div>
+
+                <div class="rental-info">
+                    <div class="rental-customer">@customerName</div>
+                    <div class="rental-meta-row">
+                        <span><i class="ti ti-car"></i> @carInfo</span>
+                        <span><i class="ti ti-calendar"></i> @r.PickupDate.ToString("dd.MM.yyyy") — @r.ReturnDate.ToString("dd.MM.yyyy")</span>
+                        <span><i class="ti ti-map-pin"></i> @(pickupBranch?.BranchName ?? "—") → @(returnBranch?.BranchName ?? "—")</span>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="rental-price">@r.TotalPrice.ToString("N0") ₺</div>
+                    <div class="rental-price-label">Toplam Ücret</div>
+                </div>
+
+                <span class="badge-status @badgeClass">@r.Status</span>
+
+                <div class="rental-actions">
+                    @if (r.Status == "Beklemede")
+                    {
+                        <button type="button" class="btn-approve" onclick="approveRental(@r.RentalId)">
+                            <i class="ti ti-check"></i> Onayla
+                        </button>
+                        <button type="button" class="btn-reject" onclick="rejectRental(@r.RentalId)">
+                            <i class="ti ti-x"></i> Reddet
+                        </button>
+                    }
+                    <button type="button" class="btn-del-rental" onclick="deleteRental(@r.RentalId)" title="Sil">
+                        <i class="ti ti-trash"></i>
+                    </button>
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div class="empty-state">
+        <div class="empty-icon"><i class="ti ti-calendar-off"></i></div>
+        <h6 style="font-weight:700;margin-bottom:6px;color:var(--text-primary);">Henüz Rezervasyon Yok</h6>
+        <p style="font-size:13.5px;color:var(--text-muted);">Müşteriler rezervasyon yaptığında burada görünecek.</p>
+    </div>
+}
+
+<!-- Onay Modal -->
+<div class="modal fade" id="approveModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:420px;">
+        <div class="modal-content" style="border:none;border-radius:14px;">
+            <div class="modal-header" style="border-bottom:1px solid var(--border);padding:18px 22px;background:#d1fae5;border-radius:14px 14px 0 0;">
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <div style="width:34px;height:34px;background:#10a05a;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;">
+                        <i class="ti ti-check" style="font-size:16px;"></i>
+                    </div>
+                    <h5 class="modal-title" style="font-size:15px;font-weight:700;color:#065f46;margin:0;">Rezervasyonu Onayla</h5>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" style="padding:22px;">
+                <p style="margin:0;font-size:14px;color:var(--text-primary);line-height:1.6;">
+                    Bu rezervasyonu onaylamak istediğinize emin misiniz? Onayladığınızda müşteriye otomatik olarak
+                    <strong>onay maili</strong> gönderilecek.
+                </p>
+            </div>
+            <div class="modal-footer" style="border-top:1px solid var(--border);padding:14px 22px;background:var(--bg2);border-radius:0 0 14px 14px;">
+                <button type="button" class="btn-edit" data-bs-dismiss="modal">
+                    <i class="ti ti-x"></i> Vazgeç
+                </button>
+                <form id="approveForm" method="post">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn-approve">
+                        <i class="ti ti-mail"></i> Onayla ve Mail Gönder
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Reddet Modal -->
+<div class="modal fade" id="rejectModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:420px;">
+        <div class="modal-content" style="border:none;border-radius:14px;">
+            <div class="modal-header" style="border-bottom:1px solid var(--border);padding:18px 22px;background:#fee2e2;border-radius:14px 14px 0 0;">
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <div style="width:34px;height:34px;background:var(--danger);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;">
+                        <i class="ti ti-x" style="font-size:16px;"></i>
+                    </div>
+                    <h5 class="modal-title" style="font-size:15px;font-weight:700;color:#991b1b;margin:0;">Rezervasyonu Reddet</h5>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" style="padding:22px;">
+                <p style="margin:0;font-size:14px;color:var(--text-primary);line-height:1.6;">
+                    Bu rezervasyonu reddetmek istediğinize emin misiniz? Bu işlem geri alınamaz.
+                </p>
+            </div>
+            <div class="modal-footer" style="border-top:1px solid var(--border);padding:14px 22px;background:var(--bg2);border-radius:0 0 14px 14px;">
+                <button type="button" class="btn-edit" data-bs-dismiss="modal">
+                    <i class="ti ti-x"></i> Vazgeç
+                </button>
+                <form id="rejectForm" method="post">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn-reject">
+                        <i class="ti ti-x"></i> Reddet
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Sil Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:400px;">
+        <div class="modal-content" style="border:none;border-radius:14px;">
+            <div class="modal-header" style="border-bottom:1px solid var(--border);padding:18px 22px;background:var(--bg2);border-radius:14px 14px 0 0;">
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <div style="width:34px;height:34px;background:#fee2e2;border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--danger);">
+                        <i class="ti ti-trash" style="font-size:16px;"></i>
+                    </div>
+                    <h5 class="modal-title" style="font-size:15px;font-weight:700;color:var(--text-primary);margin:0;">Rezervasyonu Sil</h5>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" style="padding:22px;">
+                <p style="margin:0;font-size:14px;color:var(--text-primary);line-height:1.6;">Bu rezervasyon kaydını kalıcı olarak silmek istediğinize emin misiniz?</p>
+            </div>
+            <div class="modal-footer" style="border-top:1px solid var(--border);padding:14px 22px;background:var(--bg2);border-radius:0 0 14px 14px;">
+                <button type="button" class="btn-edit" data-bs-dismiss="modal">
+                    <i class="ti ti-x"></i> Vazgeç
+                </button>
+                <form id="deleteForm" method="post">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" style="display:inline-flex;align-items:center;gap:7px;background:var(--danger);color:#fff;border:none;border-radius:9px;padding:9px 22px;font-size:13.5px;font-weight:700;cursor:pointer;">
+                        <i class="ti ti-trash"></i> Evet, Sil
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <script>document.addEventListener('DOMContentLoaded', () => showToast('@TempData["Success"]', 'success'));</script>
+}
+@if (TempData["Error"] != null)
+{
+    <script>document.addEventListener('DOMContentLoaded', () => showToast('@TempData["Error"]', 'error'));</script>
+}
+
+<script>
+    function setStatusFilter(el, status) {
+        document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+        el.classList.add('active');
+        document.querySelectorAll('.rental-card').forEach(card => {
+            card.style.display = (status === 'all' || card.dataset.status === status) ? '' : 'none';
+        });
+    }
+
+    function approveRental(id) {
+        document.getElementById('approveForm').action = '/Admin/Rental/ApproveRental/' + id;
+        new bootstrap.Modal(document.getElementById('approveModal')).show();
+    }
+
+    function rejectRental(id) {
+        document.getElementById('rejectForm').action = '/Admin/Rental/RejectRental/' + id;
+        new bootstrap.Modal(document.getElementById('rejectModal')).show();
+    }
+
+    function deleteRental(id) {
+        document.getElementById('deleteForm').action = '/Admin/Rental/DeleteRental/' + id;
+        new bootstrap.Modal(document.getElementById('deleteModal')).show();
+    }
+</script>

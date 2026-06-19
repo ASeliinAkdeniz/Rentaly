@@ -1,0 +1,556 @@
+﻿@model Rentaly.WebUI.Models.HomeIndexViewModel
+@{
+    ViewData["Title"] = "RentCar - Araç Kiralama";
+    Layout = "_UserLayout";
+}
+
+<section id="section-hero" aria-label="section" class="jarallax no-top no-bottom">
+    <img src="~/images/background/1.jpg" class="jarallax-img" alt="">
+    <div class="overlay-bg no-top no-bottom">
+        <div class="v-center">
+            <div class="container position-relative z1000">
+                <div class="row align-items-center">
+                    <div class="col-lg-6 text-light">
+                        <h4><span class="id-color">Hızlı ve Kolay Araç Kiralama</span></h4>
+                        <div class="spacer-10"></div>
+                        <h1 class="mb-2">Konforlu bir araçla dünyayı keşfedin</h1>
+                        <div class="spacer-10"></div>
+                        <p class="lead">Eşsiz konfor ve stille unutulmaz yolculuklara çıkın, geniş ve özenle seçilmiş araç filomuzla dünyayı keşfedin.</p>
+                    </div>
+
+                    <div class="col-lg-6">
+                        <div class="spacer-single sm-hide"></div>
+                        <div class="p-4 rounded-3 shadow-soft text-light" data-bgcolor="rgba(0, 0, 0, .6)">
+
+                            <form asp-controller="Car" asp-action="CarList" method="get" id="search_form">
+                                <h5>Lokasyon Seçin</h5>
+
+                                <div class="row">
+                                    <div class="col-lg-12 mb20">
+                                        <select name="branchId" class="form-control" id="branchSelect">
+                                            <option value="">Tüm Şubeler</option>
+                                            @foreach (var branch in Model.Branches)
+                                            {
+                                                <option value="@branch.BranchId">@branch.BranchName — @branch.City</option>
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="spacer-20"></div>
+
+                                <div class="row">
+                                    <div class="col-lg-6 mb20">
+                                        <h5>Alış Tarihi</h5>
+                                        <input type="date" name="pickupDate" id="pickupDateInput" class="form-control"
+                                               min="@DateTime.Now.ToString("yyyy-MM-dd")">
+                                    </div>
+
+                                    <div class="col-lg-6 mb20">
+                                        <h5>Teslim Tarihi</h5>
+                                        <input type="date" name="returnDate" id="returnDateInput" class="form-control"
+                                               min="@DateTime.Now.ToString("yyyy-MM-dd")">
+                                    </div>
+                                </div>
+
+                                <input type='submit' id='send_message' value='Araç Bul' class="btn-main pull-right">
+
+                                <div class="clearfix"></div>
+
+                            </form>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="position-absolute d-flex bottom-20">
+                <div class="de-marquee-list d-marquee-small">
+                    <div class="d-item">
+                        <span class="d-item-txt">SUV</span>
+                        <span class="d-item-display"><i class="d-item-dot"></i></span>
+                        <span class="d-item-txt">Hatchback</span>
+                        <span class="d-item-display"><i class="d-item-dot"></i></span>
+                        <span class="d-item-txt">Crossover</span>
+                        <span class="d-item-display"><i class="d-item-dot"></i></span>
+                        <span class="d-item-txt">Sedan</span>
+                        <span class="d-item-display"><i class="d-item-dot"></i></span>
+                        <span class="d-item-txt">Spor Araç</span>
+                        <span class="d-item-display"><i class="d-item-dot"></i></span>
+                        <span class="d-item-txt">Minivan</span>
+                        <span class="d-item-display"><i class="d-item-dot"></i></span>
+                        <span class="d-item-txt">Pickup</span>
+                        <span class="d-item-display"><i class="d-item-dot"></i></span>
+                    </div>
+                </div>
+
+                <div class="de-marquee-list d-marquee-small">
+                    <div class="d-item">
+                        <span class="d-item-txt">SUV</span>
+                        <span class="d-item-display"><i class="d-item-dot"></i></span>
+                        <span class="d-item-txt">Hatchback</span>
+                        <span class="d-item-display"><i class="d-item-dot"></i></span>
+                        <span class="d-item-txt">Crossover</span>
+                        <span class="d-item-display"><i class="d-item-dot"></i></span>
+                        <span class="d-item-txt">Sedan</span>
+                        <span class="d-item-display"><i class="d-item-dot"></i></span>
+                        <span class="d-item-txt">Spor Araç</span>
+                        <span class="d-item-display"><i class="d-item-dot"></i></span>
+                        <span class="d-item-txt">Minivan</span>
+                        <span class="d-item-display"><i class="d-item-dot"></i></span>
+                        <span class="d-item-txt">Pickup</span>
+                        <span class="d-item-display"><i class="d-item-dot"></i></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ ARAÇ FİLOMUZ — İLK 10 ═══ -->
+<section id="section-cars">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6 offset-lg-3 text-center">
+                <h2>Araç Filomuz</h2>
+                <p>Unutulmaz yolculuklar için çok yönlü ve seçkin araç filomuzla hayallerinizi gerçeğe taşıyoruz.</p>
+                <div class="spacer-20"></div>
+            </div>
+
+            <div class="clearfix"></div>
+
+            @if (Model.FeaturedCars.Any())
+            {
+                <div id="items-carousel" class="owl-carousel wow fadeIn">
+                    @foreach (var car in Model.FeaturedCars)
+                    {
+                        <div class="col-lg-12">
+                            <div class="de-item mb30">
+                                <div class="d-img">
+                                    @if (!string.IsNullOrEmpty(car.ImageUrl))
+                                    {
+                                        <img src="@car.ImageUrl" class="img-fluid" alt="@car.PlateNumber">
+                                    }
+                                    else
+                                    {
+                                        <img src="~/images/cars/jeep-renegade.jpg" class="img-fluid" alt="">
+                                    }
+                                </div>
+                                <div class="d-info">
+                                    <div class="d-text">
+                                        <h4>@(car.Category?.CategoryName ?? "Araç")</h4>
+                                        <div class="d-atr-group">
+                                            <span class="d-atr"><i class="fa fa-user"></i>@car.SeatCount</span>
+                                            <span class="d-atr"><i class="fa fa-suitcase"></i>@car.LuggageCount</span>
+                                            <span class="d-atr"><i class="fa fa-cog"></i>@car.FuelType</span>
+                                            <span class="d-atr"><i class="fa fa-calendar"></i>@car.Year</span>
+                                        </div>
+                                        <div class="d-price">
+                                            Günlük <span>@car.DailyPrice.ToString("N0") ₺</span>
+                                            <a class="btn-main" asp-controller="Car" asp-action="CarDetail" asp-route-id="@car.CarId">Şimdi Kirala</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="col-lg-12 text-center">
+                    <p>Şu anda gösterilecek araç bulunmuyor.</p>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+<!-- ═══ İSTATİSTİKLER ═══ -->
+<section class="text-light jarallax">
+    <img src="~/images/background/2.jpg" class="jarallax-img" alt="">
+    <div class="container">
+        <div class="row g-5">
+            <div class="col-lg-6 wow fadeInRight">
+                <h2>Müşterilerimize geniş bir <span class="id-color">ticari araç</span> ve <span class="id-color">lüks araç</span> yelpazesi sunuyoruz.</h2>
+            </div>
+            <div class="col-lg-6 wow fadeInLeft">
+                Araç kiralama şirketimizde, bütçeniz ne olursa olsun herkesin güvenilir ve konforlu bir araç kullanma keyfini yaşamayı hak ettiğine inanıyoruz.
+                Zarif sedanlardan geniş SUV'lara kadar, rekabetçi fiyatlarla iyi bakımlı çeşitli araçlardan oluşan bir filo hazırladık.
+                Kolaylaştırılmış kiralama sürecimizle, istediğiniz aracı hızlı ve uygun şekilde rezerve edebilirsiniz.
+            </div>
+        </div>
+        <div class="spacer-double"></div>
+        <div class="row text-center">
+            @if (Model.Statistics.Any())
+            {
+                @foreach (var stat in Model.Statistics)
+                {
+                    <div class="col-md-3 col-sm-6 mb-sm-30">
+                        <div class="de_count transparent text-light wow fadeInUp">
+                            <h3 class="timer" data-to="@stat.Value" data-speed="3000">0</h3>
+                            @stat.Title
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="col-md-3 col-sm-6 mb-sm-30">
+                    <div class="de_count transparent text-light wow fadeInUp">
+                        <h3 class="timer" data-to="15425" data-speed="3000">0</h3>
+                        Tamamlanan Sipariş
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6 mb-sm-30">
+                    <div class="de_count transparent text-light wow fadeInUp">
+                        <h3 class="timer" data-to="8745" data-speed="3000">0</h3>
+                        Mutlu Müşteri
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6 mb-sm-30">
+                    <div class="de_count transparent text-light wow fadeInUp">
+                        <h3 class="timer" data-to="235" data-speed="3000">0</h3>
+                        Araç Filosu
+                    </div>
+                </div>
+                <div class="col-md-3 col-sm-6 mb-sm-30">
+                    <div class="de_count transparent text-light wow fadeInUp">
+                        <h3 class="timer" data-to="15" data-speed="3000">0</h3>
+                        Yıllık Tecrübe
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+<!-- ═══ ÖZELLİKLERİMİZ ═══ -->
+<section aria-label="section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6 offset-lg-3 text-center">
+                <h2>Özelliklerimiz</h2>
+                <p>Unutulmaz yolculuklar ve sorunsuz hareketlilik çözümleri için konfor, güvenlik ve esneklik dünyasını keşfedin.</p>
+                <div class="spacer-20"></div>
+            </div>
+            <div class="clearfix"></div>
+            <div class="col-lg-3">
+                <div class="box-icon s2 p-small mb20 wow fadeInRight" data-wow-delay=".5s">
+                    <i class="fa bg-color fa-trophy"></i>
+                    <div class="d-inner">
+                        <h4>Birinci Sınıf Hizmet</h4>
+                        Lüksün özenli hizmetle buluştuğu, beklentilerinizin her zaman aşıldığı unutulmaz anlar.
+                    </div>
+                </div>
+                <div class="box-icon s2 p-small mb20 wow fadeInL fadeInRight" data-wow-delay=".75s">
+                    <i class="fa bg-color fa-road"></i>
+                    <div class="d-inner">
+                        <h4>7/24 Yol Yardımı</h4>
+                        İhtiyacınız olduğunda güvenilir destek, sizi yolda tutarak içiniz rahat eder.
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <img src="~/images/misc/car-2.png" alt="" class="img-fluid wow fadeInUp">
+            </div>
+
+            <div class="col-lg-3">
+                <div class="box-icon s2 d-invert p-small mb20 wow fadeInL fadeInLeft" data-wow-delay="1s">
+                    <i class="fa bg-color fa-tag"></i>
+                    <div class="d-inner">
+                        <h4>Minimum Maliyetle Kalite</h4>
+                        Kaliteyi yükseltirken maliyetleri en aza indiren, erişilebilir mükemmellik.
+                    </div>
+                </div>
+                <div class="box-icon s2 d-invert p-small mb20 wow fadeInL fadeInLeft" data-wow-delay="1.25s">
+                    <i class="fa bg-color fa-map-pin"></i>
+                    <div class="d-inner">
+                        <h4>Ücretsiz Alış & Teslim</h4>
+                        Ücretsiz alış ve teslim hizmetiyle araç kiralama deneyiminize kolaylık katın.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ MARKALARIMIZ ═══ -->
+@if (Model.Brands.Any())
+{
+    <section aria-label="section" class="pt40 pb40" data-bgcolor="#f7f7f7">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6 offset-lg-3 text-center">
+                    <h2>Çalıştığımız Markalar</h2>
+                    <p>Filomuzda yer alan güvenilir ve dünyaca tanınan markalar.</p>
+                    <div class="spacer-20"></div>
+                </div>
+            </div>
+            <div class="row align-items-center justify-content-center g-4">
+                @foreach (var brand in Model.Brands)
+                {
+                    <div class="col-lg-2 col-md-3 col-4 text-center">
+                        <div class="p-3">
+                            @if (!string.IsNullOrEmpty(brand.ImageUrl))
+                            {
+                                <img src="@brand.ImageUrl" alt="@brand.BrandName" class="img-fluid"
+                                     style="max-height:60px;object-fit:contain;filter:grayscale(100%);opacity:.7;transition:.3s;"
+                                     onmouseover="this.style.filter='grayscale(0%)';this.style.opacity='1';"
+                                     onmouseout="this.style.filter='grayscale(100%)';this.style.opacity='.7';" />
+                            }
+                            else
+                            {
+                                <h5>@brand.BrandName</h5>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </section>
+}
+<!-- ═══ GELECEĞİMİZ ═══ -->
+@if (Model.OurFutures.Any())
+{
+    <section aria-label="section">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6 offset-lg-3 text-center">
+                    <h2>Geleceğimiz</h2>
+                    <p>Daha sürdürülebilir ve yenilikçi bir araç kiralama deneyimi için attığımız adımlar.</p>
+                    <div class="spacer-20"></div>
+                </div>
+            </div>
+            <div class="row g-4">
+                @foreach (var future in Model.OurFutures)
+                {
+                    <div class="col-lg-4 col-md-6">
+                        <div class="de-item mb30">
+                            <div class="d-img">
+                                @if (!string.IsNullOrEmpty(future.ImageUrl))
+                                {
+                                    <img src="@future.ImageUrl" class="img-fluid" alt="@future.Title">
+                                }
+                                else
+                                {
+                                    <img src="~/images/misc/e2.jpg" class="img-fluid" alt="">
+                                }
+                            </div>
+                            <div class="d-info">
+                                <div class="d-text">
+                                    <h4>@future.Title</h4>
+                                    <p>@future.Description</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </section>
+}
+
+<!-- ═══ ÖDÜLLERİMİZ ═══ -->
+@if (Model.Awards.Any())
+{
+    <section aria-label="section" class="pt40 pb40" data-bgcolor="#f7f7f7">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6 offset-lg-3 text-center">
+                    <h2>Ödüllerimiz</h2>
+                    <p>Yılların verdiği tecrübeyle kazandığımız ödüller ve takdirler.</p>
+                    <div class="spacer-20"></div>
+                </div>
+            </div>
+            <div class="row g-4 justify-content-center">
+                @foreach (var award in Model.Awards.OrderByDescending(a => a.Year))
+                {
+                    <div class="col-lg-3 col-md-4 col-6 text-center">
+                        <div class="p-4 bg-white rounded-3 shadow-soft h-100">
+                            @if (!string.IsNullOrEmpty(award.ImageUrl))
+                            {
+                                <img src="@award.ImageUrl" class="img-fluid mb-3" alt="@award.Title" style="max-height:80px;object-fit:contain;">
+                            }
+                            else
+                            {
+                                <i class="fa fa-trophy fa-3x id-color mb-3"></i>
+                            }
+                            <h5>@award.Title</h5>
+                            <span class="d-block id-color fw-bold mb-2">@award.Year</span>
+                            <p class="small">@award.Description</p>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </section>
+}
+
+<!-- ═══ MÜŞTERİ YORUMLARI ═══ -->
+<section id="section-testimonials" class="no-top no-bottom">
+    <div class="container-fluid">
+        <div class="row g-2 p-2 align-items-center">
+            @if (Model.Testimonials.Any())
+            {
+                @foreach (var t in Model.Testimonials)
+                {
+                    <div class="col-md-4">
+                        <div class="de-image-text">
+                            <div class="d-text">
+                                <div class="d-quote id-color"><i class="fa fa-quote-right"></i></div>
+                                <h4>
+                                    @for (int i = 1; i <= 5; i++)
+                                    {
+                                        <i class="fa @(i <= t.Rating ? "fa-star" : "fa-star-o") id-color" style="font-size:14px;"></i>
+                                    }
+                                </h4>
+                                <blockquote>
+                                    @t.Comment
+                                    <span class="by">@t.CustomerName</span>
+                                </blockquote>
+                            </div>
+                            @if (!string.IsNullOrEmpty(t.ImageUrl))
+                            {
+                                <img src="@t.ImageUrl" class="img-fluid" alt="@t.CustomerName">
+                            }
+                            else
+                            {
+                                <img src="~/images/testimonial/1.jpg" class="img-fluid" alt="">
+                            }
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="col-md-4">
+                    <div class="de-image-text">
+                        <div class="d-text">
+                            <div class="d-quote id-color"><i class="fa fa-quote-right"></i></div>
+                            <h4>Mükemmel Hizmet! Araç Kiralama Deneyimi!</h4>
+                            <blockquote>
+                                5 yılı aşkın süredir araç kiralama ihtiyaçlarım için RentCar kullanıyorum. Hizmetlerinde hiçbir sorun yaşamadım.
+                                <span class="by">Ahmet Yılmaz</span>
+                            </blockquote>
+                        </div>
+                        <img src="~/images/testimonial/1.jpg" class="img-fluid" alt="">
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+<!-- ═══ SIK SORULAN SORULAR ═══ -->
+<section id="section-faq">
+    <div class="container">
+        <div class="row">
+            <div class="col text-center">
+                <h2>Sorularınız mı var?</h2>
+                <div class="spacer-20"></div>
+            </div>
+        </div>
+        <div class="row g-custom-x">
+            @if (Model.FAQs.Any())
+            {
+                var half = (Model.FAQs.Count + 1) / 2;
+                var firstHalf = Model.FAQs.Take(half).ToList();
+                var secondHalf = Model.FAQs.Skip(half).ToList();
+
+                <div class="col-md-6 wow fadeInUp">
+                    <div class="accordion secondary">
+                        <div class="accordion-section">
+                            @foreach (var faq in firstHalf)
+                            {
+                                <div class="accordion-section-title" data-tab="#accordion-@faq.FAQId">
+                                    @faq.Question
+                                </div>
+                                <div class="accordion-section-content" id="accordion-@faq.FAQId">
+                                    <p>@faq.Answer</p>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6 wow fadeInUp">
+                    <div class="accordion secondary">
+                        <div class="accordion-section">
+                            @foreach (var faq in secondHalf)
+                            {
+                                <div class="accordion-section-title" data-tab="#accordion-@faq.FAQId">
+                                    @faq.Question
+                                </div>
+                                <div class="accordion-section-content" id="accordion-@faq.FAQId">
+                                    <p>@faq.Answer</p>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="col-md-6 wow fadeInUp">
+                    <div class="accordion secondary">
+                        <div class="accordion-section">
+                            <div class="accordion-section-title" data-tab="#accordion-1">
+                                Araç kiralamaya nasıl başlayabilirim?
+                            </div>
+                            <div class="accordion-section-content" id="accordion-1">
+                                <p>Ana sayfadan lokasyon ve tarih seçerek müsait araçları görüntüleyebilir, dilediğiniz aracı seçerek rezervasyon yapabilirsiniz.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+<!-- ═══ ÇAĞRI ALANI ═══ -->
+<section id="section-call-to-action" class="bg-color-2 pt60 pb60 text-light">
+    <div class="container">
+        <div class="container">
+            <div class="row">
+
+                <div class="col-lg-4 offset-lg-2">
+                    <span class="subtitle text-white">Daha fazla bilgi için bizi arayın</span>
+                    <h2 class="s2">RentCar müşteri hizmetleri her zaman yardımınıza hazır.</h2>
+                </div>
+
+                <div class="col-lg-4 text-lg-center text-sm-center">
+                    <div class="phone-num-big">
+                        <i class="fa fa-phone"></i>
+                        <span class="pnb-text">
+                            Bizi Arayın
+                        </span>
+                        <span class="pnb-num">
+                            0850 123 45 67
+                        </span>
+                    </div>
+                    <a asp-controller="Home" asp-action="Contact" class="btn-main">İletişime Geçin</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        // Teslim tarihi her zaman alış tarihinden sonra olmalı
+        document.addEventListener('DOMContentLoaded', function () {
+            const pickupInput = document.getElementById('pickupDateInput');
+            const returnInput = document.getElementById('returnDateInput');
+
+            if (pickupInput && returnInput) {
+                pickupInput.addEventListener('change', function () {
+                    returnInput.min = pickupInput.value;
+                    if (returnInput.value && returnInput.value < pickupInput.value) {
+                        returnInput.value = pickupInput.value;
+                    }
+                });
+            }
+        });
+    </script>
+}

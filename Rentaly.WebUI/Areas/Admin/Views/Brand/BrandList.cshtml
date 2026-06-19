@@ -1,0 +1,249 @@
+﻿@model List<Rentaly.EntityLayer.Entities.Brand>
+@{
+    ViewData["Title"] = "Markalar";
+    ViewData["ActiveMenu"] = "Brand";
+    ViewData["BreadcrumbParent"] = "Araç Yönetimi";
+    Layout = "_AdminLayout";
+}
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Marka Listesi</h1>
+        <p class="page-subtitle">Araç markalarını görüntüleyin ve yönetin.</p>
+    </div>
+    <a asp-area="Admin" asp-controller="Brand" asp-action="CreateBrand" class="btn-add">
+        <i class="ti ti-plus"></i> Yeni Marka
+    </a>
+</div>
+
+<div class="stats-grid" style="margin-bottom:22px;">
+    <div class="stat-card">
+        <div class="stat-icon navy"><i class="ti ti-bookmark"></i></div>
+        <div>
+            <div class="stat-label">Toplam Marka</div>
+            <div class="stat-value">@Model.Count()</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon green"><i class="ti ti-circle-check"></i></div>
+        <div>
+            <div class="stat-label">Gösterilen</div>
+            <div class="stat-value" id="statFiltered">@Model.Count()</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon amber"><i class="ti ti-photo"></i></div>
+        <div>
+            <div class="stat-label">Logolu Marka</div>
+            <div class="stat-value">@Model.Count(b => !string.IsNullOrEmpty(b.ImageUrl))</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon rose"><i class="ti ti-clock"></i></div>
+        <div>
+            <div class="stat-label">Son Eklenen</div>
+            <div class="stat-value" style="font-size:14px;">@(Model.Any() ? Model.Last().BrandName : "—")</div>
+        </div>
+    </div>
+</div>
+
+<!-- Toolbar -->
+<div style="background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:14px 18px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:20px;">
+    <div style="position:relative;flex:1;min-width:200px;">
+        <i class="ti ti-search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:16px;"></i>
+        <input type="text" id="brandSearch" placeholder="Marka adı ara…" oninput="filterBrands()"
+               class="form-control" style="padding-left:36px;" />
+    </div>
+    <button onclick="resetFilters()" class="btn-edit">
+        <i class="ti ti-rotate-left"></i> Sıfırla
+    </button>
+</div>
+
+<!-- Tablo -->
+<div class="table-card">
+    <div class="table-card-header">
+        <div class="table-card-title">Markalar</div>
+        <span class="badge-status amber" id="totalBadge">@Model.Count() Marka</span>
+    </div>
+    <table class="admin-table" id="brandTable">
+        <thead>
+            <tr>
+                <th style="width:60px;">#</th>
+                <th>Marka Adı</th>
+                <th style="width:100px;text-align:center;">Logo</th>
+                <th style="width:160px;text-align:right;">İşlemler</th>
+            </tr>
+        </thead>
+        <tbody id="brandTableBody">
+            @foreach (var brand in Model)
+            {
+                <tr data-id="@brand.BrandId" data-name="@brand.BrandName.ToLower()">
+                    <td>
+                        <span style="width:32px;height:32px;background:var(--bg2);color:var(--navy);border-radius:8px;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;">
+                            @brand.BrandId
+                        </span>
+                    </td>
+                    <td>
+                        <div style="font-weight:600;font-size:14px;color:var(--text-primary);">@brand.BrandName</div>
+                    </td>
+                    <td style="text-align:center;">
+                        @if (!string.IsNullOrEmpty(brand.ImageUrl))
+                        {
+                            <img src="@brand.ImageUrl" alt="@brand.BrandName"
+                                 style="max-height:36px;max-width:80px;object-fit:contain;"
+                                 onerror="this.style.display='none'" />
+                        }
+                        else
+                        {
+                            <span style="font-size:12px;color:var(--text-muted);">—</span>
+                        }
+                    </td>
+                    <td>
+                        <div style="display:flex;gap:6px;justify-content:flex-end;">
+                            <button class="btn-edit" onclick="openEditModal(@brand.BrandId, '@brand.BrandName', '@brand.ImageUrl')">
+                                <i class="ti ti-pencil"></i> Düzenle
+                            </button>
+                            <a asp-area="Admin" asp-controller="Brand" asp-action="DeleteBrand"
+                               asp-route-id="@brand.BrandId" class="btn-delete"
+                               onclick="return confirm('@brand.BrandName markasını silmek istediğinizden emin misiniz?')">
+                                <i class="ti ti-trash"></i> Sil
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <!-- Boş durum -->
+    <div id="emptyState" style="display:none;padding:52px 20px;text-align:center;">
+        <div style="width:64px;height:64px;background:var(--bg2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:26px;color:var(--text-muted);margin:0 auto 16px;">
+            <i class="ti ti-bookmark-off"></i>
+        </div>
+        <h6 style="font-weight:700;margin-bottom:6px;color:var(--text-primary);">Marka Bulunamadı</h6>
+        <p style="font-size:13.5px;color:var(--text-muted);margin-bottom:14px;">Arama kriterinizle eşleşen marka yok.</p>
+        <button onclick="resetFilters()" class="btn-add">
+            <i class="ti ti-rotate-left"></i> Filtreyi Temizle
+        </button>
+    </div>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <script>
+        document.addEventListener('DOMContentLoaded', () => showToast('@TempData["Success"]', 'success'));
+    </script>
+}
+
+<script>
+    function filterBrands() {
+        const q = document.getElementById('brandSearch').value.toLowerCase().trim();
+        let visible = 0;
+        document.querySelectorAll('#brandTableBody tr').forEach(row => {
+            const name = row.dataset.name || '';
+            const show = !q || name.includes(q);
+            row.style.display = show ? '' : 'none';
+            if (show) visible++;
+        });
+        document.getElementById('statFiltered').textContent = visible;
+        document.getElementById('totalBadge').textContent = visible + ' Marka';
+        document.getElementById('emptyState').style.display = visible === 0 ? 'block' : 'none';
+    }
+
+    function resetFilters() {
+        document.getElementById('brandSearch').value = '';
+        filterBrands();
+    }
+        function openEditModal(id, name, imageUrl) {
+        document.getElementById('editBrandId').value = id;
+        document.getElementById('editBrandName').value = name;
+        document.getElementById('editImageUrl').value = imageUrl || '';
+        document.getElementById('modalBrandSubtitle').textContent = name + ' — bilgilerini güncelleyin';
+        updateEditLogoPreview(imageUrl);
+        new bootstrap.Modal(document.getElementById('editBrandModal')).show();
+    }
+
+    function updateEditLogoPreview(url) {
+        const img = document.getElementById('editLogoPreview');
+        const placeholder = document.getElementById('editLogoPlaceholder');
+        if (url && url.startsWith('http')) {
+            img.src = url;
+            img.onload = () => {
+                img.style.display = 'block';
+                placeholder.style.display = 'none';
+            };
+            img.onerror = () => {
+                img.style.display = 'none';
+                placeholder.style.display = 'block';
+            };
+        } else {
+            img.style.display = 'none';
+            placeholder.style.display = 'block';
+        }
+    }
+</script>
+<!-- Update Brand Modal -->
+<div class="modal fade" id="editBrandModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:460px;">
+        <div class="modal-content" style="border:none;border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,0.15);">
+
+            <div class="modal-header" style="border-bottom:1px solid var(--border);padding:20px 24px;background:var(--bg2);border-radius:14px 14px 0 0;">
+                <div style="display:flex;align-items:center;gap:12px;">
+                    <div style="width:38px;height:38px;background:var(--navy);border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff;">
+                        <i class="ti ti-pencil" style="font-size:18px;"></i>
+                    </div>
+                    <div>
+                        <h5 class="modal-title" style="font-size:15px;font-weight:700;color:var(--text-primary);margin:0;">Marka Düzenle</h5>
+                        <p style="font-size:11px;color:var(--text-muted);margin:0;" id="modalBrandSubtitle">Marka bilgilerini güncelleyin</p>
+                    </div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <form asp-area="Admin" asp-controller="Brand" asp-action="UpdateBrand" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" id="editBrandId" name="BrandId" />
+
+                <div class="modal-body" style="padding:24px;">
+
+                    <!-- Logo önizleme -->
+                    <div style="text-align:center;margin-bottom:20px;">
+                        <div style="width:80px;height:80px;background:var(--bg2);border:2px dashed var(--border);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 8px;overflow:hidden;">
+                            <img id="editLogoPreview" src="" alt="Logo"
+                                 style="max-width:72px;max-height:72px;object-fit:contain;display:none;" />
+                            <i class="ti ti-photo" id="editLogoPlaceholder" style="font-size:28px;color:var(--text-muted);"></i>
+                        </div>
+                        <p style="font-size:11px;color:var(--text-muted);">Logo Önizleme</p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Marka Adı</label>
+                        <input type="text" id="editBrandName" name="BrandName"
+                               class="form-control" placeholder="örn. Toyota, BMW…" />
+                    </div>
+
+                    <div class="mb-2">
+                        <label class="form-label">Logo URL</label>
+                        <input type="text" id="editImageUrl" name="ImageUrl"
+                               class="form-control" placeholder="https://example.com/logo.png"
+                               oninput="updateEditLogoPreview(this.value)" />
+                        <p style="font-size:11.5px;color:var(--text-muted);margin-top:5px;">
+                            <i class="ti ti-info-circle me-1"></i>Markanın logo görselinin internet adresini yapıştırın.
+                        </p>
+                    </div>
+
+                </div>
+
+                <div class="modal-footer" style="border-top:1px solid var(--border);padding:16px 24px;background:var(--bg2);border-radius:0 0 14px 14px;display:flex;justify-content:flex-end;gap:8px;">
+                    <button type="button" class="btn-edit" data-bs-dismiss="modal">
+                        <i class="ti ti-x"></i> Vazgeç
+                    </button>
+                    <button type="submit" class="btn-add">
+                        <i class="ti ti-check"></i> Güncelle
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>

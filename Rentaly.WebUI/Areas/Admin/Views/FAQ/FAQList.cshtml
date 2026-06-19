@@ -1,0 +1,373 @@
+﻿@model List<Rentaly.EntityLayer.Entities.FAQ>
+@{
+    ViewData["Title"] = "Sık Sorulan Sorular";
+    ViewData["ActiveMenu"] = "FAQ";
+    ViewData["BreadcrumbParent"] = "İçerik Yönetimi";
+    Layout = "_AdminLayout";
+}
+
+<style>
+    .faq-item {
+        background: #fff;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 16px 18px;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: flex-start;
+        gap: 14px;
+        transition: var(--transition);
+    }
+
+        .faq-item:hover {
+            box-shadow: var(--shadow-md);
+            border-color: var(--accent2);
+        }
+
+    .faq-order-badge {
+        width: 32px;
+        height: 32px;
+        background: var(--bg2);
+        color: var(--navy);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        font-weight: 700;
+        flex-shrink: 0;
+    }
+
+    .faq-content {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .faq-question {
+        font-size: 14.5px;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 4px;
+    }
+
+    .faq-answer {
+        font-size: 13px;
+        color: var(--text-muted);
+        line-height: 1.5;
+    }
+
+    .faq-actions {
+        display: flex;
+        gap: 6px;
+        flex-shrink: 0;
+    }
+
+    .action-btn-edit {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        background: #fef3c7;
+        color: #92400e;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 7px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all .15s;
+    }
+
+        .action-btn-edit:hover {
+            background: #f59e0b;
+            color: #fff;
+        }
+
+    .action-btn-delete {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        background: #fee2e2;
+        color: #be123c;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 7px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all .15s;
+    }
+
+        .action-btn-delete:hover {
+            background: var(--danger);
+            color: #fff;
+        }
+
+    .empty-state {
+        padding: 64px 20px;
+        text-align: center;
+        background: #fff;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+    }
+
+    .empty-icon {
+        width: 72px;
+        height: 72px;
+        background: var(--bg2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+        color: var(--navy);
+        margin: 0 auto 18px;
+    }
+</style>
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Sık Sorulan Sorular</h1>
+        <p class="page-subtitle">Ana sayfada görünecek SSS içeriklerini yönetin.</p>
+    </div>
+    <button type="button" class="btn-add" onclick="openCreateModal()">
+        <i class="ti ti-plus"></i> Yeni Soru
+    </button>
+</div>
+
+<div class="stats-grid" style="grid-template-columns:repeat(2,1fr);max-width:480px;margin-bottom:22px;">
+    <div class="stat-card">
+        <div class="stat-icon navy"><i class="ti ti-help-circle"></i></div>
+        <div>
+            <div class="stat-label">Toplam Soru</div>
+            <div class="stat-value">@Model.Count()</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon green"><i class="ti ti-list-numbers"></i></div>
+        <div>
+            <div class="stat-label">Sıralı Gösterim</div>
+            <div class="stat-value" style="font-size:14px;">Aktif</div>
+        </div>
+    </div>
+</div>
+
+@if (Model.Any())
+{
+    <div id="faqContainer">
+        @foreach (var f in Model)
+        {
+            <div class="faq-item" data-id="@f.FAQId">
+                <div class="faq-order-badge">@f.OrderIndex</div>
+                <div class="faq-content">
+                    <div class="faq-question">@f.Question</div>
+                    <div class="faq-answer">@f.Answer</div>
+                </div>
+                <div class="faq-actions">
+                    <button type="button" class="action-btn-edit"
+                            onclick="openEditModal(@f.FAQId, '@Html.Raw(f.Question?.Replace("'", "\\'"))', '@Html.Raw(f.Answer?.Replace("'", "\\'"))', @f.OrderIndex)">
+                        <i class="ti ti-pencil"></i> Düzenle
+                    </button>
+                    <button type="button" class="action-btn-delete"
+                            onclick="openDeleteModal(@f.FAQId, '@Html.Raw(f.Question?.Replace("'", "\\'"))')">
+                        <i class="ti ti-trash"></i> Sil
+                    </button>
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div class="empty-state">
+        <div class="empty-icon"><i class="ti ti-help-circle"></i></div>
+        <h6 style="font-weight:700;margin-bottom:6px;color:var(--text-primary);">Henüz Soru Eklenmemiş</h6>
+        <p style="font-size:13.5px;color:var(--text-muted);margin-bottom:14px;">Ana sayfada gösterilecek ilk SSS'nizi ekleyin.</p>
+        <button type="button" onclick="openCreateModal()" class="btn-add">
+            <i class="ti ti-plus"></i> Yeni Soru Ekle
+        </button>
+    </div>
+}
+
+<!-- CREATE MODAL -->
+<div class="modal fade" id="createModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:520px;">
+        <div class="modal-content" style="border:none;border-radius:14px;">
+            <div class="modal-header" style="border-bottom:1px solid var(--border);padding:20px 24px;background:var(--bg2);border-radius:14px 14px 0 0;">
+                <div style="display:flex;align-items:center;gap:12px;">
+                    <div style="width:38px;height:38px;background:var(--navy);border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff;">
+                        <i class="ti ti-plus" style="font-size:18px;"></i>
+                    </div>
+                    <div>
+                        <h5 class="modal-title" style="font-size:15px;font-weight:700;color:var(--text-primary);margin:0;">Yeni Soru Ekle</h5>
+                        <p style="font-size:11px;color:var(--text-muted);margin:0;">SSS bilgilerini girin</p>
+                    </div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="createForm" asp-area="Admin" asp-controller="FAQ" asp-action="CreateFAQ" method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-body" style="padding:24px;">
+                    <div class="mb-3">
+                        <label class="form-label">Soru <span style="color:var(--danger);">*</span></label>
+                        <input type="text" name="Question" id="createQuestion" class="form-control"
+                               placeholder="örn. Rezervasyonumu nasıl iptal edebilirim?" maxlength="200" />
+                        <span id="createQuestionError" style="font-size:12px;color:var(--danger);display:none;">
+                            <i class="ti ti-alert-circle"></i> Soru zorunludur.
+                        </span>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Cevap <span style="color:var(--danger);">*</span></label>
+                        <textarea name="Answer" id="createAnswer" class="form-control" rows="4"
+                                  placeholder="Sorunun cevabını yazın…" maxlength="600"></textarea>
+                        <span id="createAnswerError" style="font-size:12px;color:var(--danger);display:none;">
+                            <i class="ti ti-alert-circle"></i> Cevap zorunludur.
+                        </span>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Sıralama Numarası</label>
+                        <input type="number" name="OrderIndex" id="createOrderIndex" class="form-control"
+                               placeholder="örn. 1" min="0" value="@(Model.Any() ? Model.Max(f => f.OrderIndex) + 1 : 1)" />
+                        <p style="font-size:11.5px;color:var(--text-muted);margin-top:5px;">
+                            <i class="ti ti-info-circle" style="color:var(--accent2);"></i> Küçük sayılar listede üstte görünür.
+                        </p>
+                    </div>
+                </div>
+                <div class="modal-footer" style="border-top:1px solid var(--border);padding:16px 24px;background:var(--bg2);border-radius:0 0 14px 14px;display:flex;justify-content:flex-end;gap:8px;">
+                    <button type="button" class="btn-edit" data-bs-dismiss="modal">
+                        <i class="ti ti-x"></i> Vazgeç
+                    </button>
+                    <button type="button" class="btn-add" onclick="submitCreate()">
+                        <i class="ti ti-check"></i> Kaydet
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="modal fade" id="editModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:520px;">
+        <div class="modal-content" style="border:none;border-radius:14px;">
+            <div class="modal-header" style="border-bottom:1px solid var(--border);padding:20px 24px;background:var(--bg2);border-radius:14px 14px 0 0;">
+                <div style="display:flex;align-items:center;gap:12px;">
+                    <div style="width:38px;height:38px;background:var(--navy);border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff;">
+                        <i class="ti ti-pencil" style="font-size:18px;"></i>
+                    </div>
+                    <div>
+                        <h5 class="modal-title" style="font-size:15px;font-weight:700;color:var(--text-primary);margin:0;">Soru Düzenle</h5>
+                        <p style="font-size:11px;color:var(--text-muted);margin:0;">SSS bilgilerini güncelleyin</p>
+                    </div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form asp-area="Admin" asp-controller="FAQ" asp-action="UpdateFAQ" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" id="editFAQId" name="FAQId" />
+                <div class="modal-body" style="padding:24px;">
+                    <div class="mb-3">
+                        <label class="form-label">Soru <span style="color:var(--danger);">*</span></label>
+                        <input type="text" name="Question" id="editQuestion" class="form-control" maxlength="200" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Cevap <span style="color:var(--danger);">*</span></label>
+                        <textarea name="Answer" id="editAnswer" class="form-control" rows="4" maxlength="600"></textarea>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Sıralama Numarası</label>
+                        <input type="number" name="OrderIndex" id="editOrderIndex" class="form-control" min="0" />
+                    </div>
+                </div>
+                <div class="modal-footer" style="border-top:1px solid var(--border);padding:16px 24px;background:var(--bg2);border-radius:0 0 14px 14px;display:flex;justify-content:flex-end;gap:8px;">
+                    <button type="button" class="btn-edit" data-bs-dismiss="modal">
+                        <i class="ti ti-x"></i> Vazgeç
+                    </button>
+                    <button type="submit" class="btn-add">
+                        <i class="ti ti-check"></i> Güncelle
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- DELETE MODAL -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:400px;">
+        <div class="modal-content" style="border:none;border-radius:14px;">
+            <div class="modal-header" style="border-bottom:1px solid var(--border);padding:18px 22px;background:var(--bg2);border-radius:14px 14px 0 0;">
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <div style="width:34px;height:34px;background:#fee2e2;border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--danger);">
+                        <i class="ti ti-trash" style="font-size:16px;"></i>
+                    </div>
+                    <h5 class="modal-title" style="font-size:15px;font-weight:700;color:var(--text-primary);margin:0;">Soru Sil</h5>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" style="padding:22px;">
+                <div style="display:flex;gap:14px;align-items:flex-start;">
+                    <div style="width:46px;height:46px;background:#fee2e2;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--danger);font-size:20px;flex-shrink:0;">
+                        <i class="ti ti-alert-triangle"></i>
+                    </div>
+                    <div>
+                        <p style="margin:0;font-size:14.5px;color:var(--text-primary);line-height:1.5;">
+                            <strong id="deleteFAQQuestion">bu soruyu</strong> silmek istediğinizden emin misiniz?
+                        </p>
+                        <p style="margin:6px 0 0;font-size:13px;color:var(--text-muted);">Bu işlem geri alınamaz.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer" style="border-top:1px solid var(--border);padding:14px 22px;background:var(--bg2);border-radius:0 0 14px 14px;display:flex;justify-content:flex-end;gap:8px;">
+                <button type="button" class="btn-edit" data-bs-dismiss="modal">
+                    <i class="ti ti-x"></i> Vazgeç
+                </button>
+                <form id="deleteForm" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" id="deleteFAQId" name="id" />
+                    <button type="submit" style="display:inline-flex;align-items:center;gap:7px;background:var(--danger);color:#fff;border:none;border-radius:9px;padding:9px 22px;font-size:13.5px;font-weight:700;cursor:pointer;">
+                        <i class="ti ti-trash"></i> Evet, Sil
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <script>document.addEventListener('DOMContentLoaded', () => showToast('@TempData["Success"]', 'success'));</script>
+}
+
+<script>
+    function openCreateModal() {
+        document.getElementById('createQuestion').value = '';
+        document.getElementById('createAnswer').value = '';
+        document.getElementById('createQuestionError').style.display = 'none';
+        document.getElementById('createAnswerError').style.display = 'none';
+        new bootstrap.Modal(document.getElementById('createModal')).show();
+    }
+
+    function submitCreate() {
+        const q = document.getElementById('createQuestion').value.trim();
+        const a = document.getElementById('createAnswer').value.trim();
+        document.getElementById('createQuestionError').style.display = !q ? 'block' : 'none';
+        document.getElementById('createAnswerError').style.display = !a ? 'block' : 'none';
+        if (!q || !a) return;
+        document.getElementById('createForm').submit();
+    }
+
+    function openEditModal(id, question, answer, orderIndex) {
+        document.getElementById('editFAQId').value = id;
+        document.getElementById('editQuestion').value = question;
+        document.getElementById('editAnswer').value = answer;
+        document.getElementById('editOrderIndex').value = orderIndex;
+        new bootstrap.Modal(document.getElementById('editModal')).show();
+    }
+
+    function openDeleteModal(id, question) {
+        document.getElementById('deleteFAQQuestion').textContent = '"' + question + '"';
+        document.getElementById('deleteFAQId').value = id;
+        document.getElementById('deleteForm').action = '/Admin/FAQ/DeleteFAQ/' + id;
+        new bootstrap.Modal(document.getElementById('deleteModal')).show();
+    }
+</script>

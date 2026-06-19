@@ -1,0 +1,55 @@
+﻿@model Rentaly.EntityLayer.Entities.Car
+@{
+    ViewData["Title"] = "Rezervasyon Alındı - RentCar";
+    Layout = "_UserLayout";
+}
+
+<section id="subheader" class="jarallax text-light">
+    <img src="~/images/background/2.jpg" class="jarallax-img" alt="">
+    <div class="center-y relative text-center">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12 text-center">
+                    <h1>Rezervasyon Talebiniz Alındı</h1>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section aria-label="section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-7 text-center">
+
+                <div class="mb30">
+                    <i class="fa fa-check-circle id-color" style="font-size:72px;"></i>
+                </div>
+
+                <h2>Teşekkürler! 🎉</h2>
+                <p class="lead">
+                    Rezervasyon talebiniz başarıyla alındı.
+                    @if (Model != null)
+                    {
+                        <text><strong>@(Model.Category?.CategoryName ?? "Aracınız")</strong> için yaptığınız talep</text>
+                    }
+                    şu anda ekibimiz tarafından inceleniyor.
+                </p>
+
+                <div class="p-4 rounded-3 mb30" style="background:#f7f7f7;text-align:left;">
+                    <h5><i class="fa fa-info-circle id-color"></i> Sırada ne var?</h5>
+                    <ul class="mt20" style="line-height:1.8;">
+                        <li>Rezervasyonunuz admin ekibimiz tarafından incelenecek.</li>
+                        <li>Onaylandığında, e-posta adresinize <strong>onay maili</strong> gönderilecek.</li>
+                        <li>Mailde rezervasyon detaylarınız ve size özel bir indirim kodu yer alacak.</li>
+                        <li>Belirttiğiniz tarihlerde araç sizin için ayrılacak.</li>
+                    </ul>
+                </div>
+
+                <a asp-controller="Home" asp-action="Index" class="btn-main me-2">Ana Sayfaya Dön</a>
+                <a asp-controller="Car" asp-action="CarList" class="btn-line">Diğer Araçları İncele</a>
+
+            </div>
+        </div>
+    </div>
+</section>

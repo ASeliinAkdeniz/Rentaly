@@ -1,0 +1,143 @@
+﻿@model Rentaly.EntityLayer.Entities.Car
+@{
+    ViewData["Title"] = $"{Model.Category?.CategoryName ?? "Araç"} - RentCar";
+    Layout = "_UserLayout";
+}
+
+<!-- ═══ SUBHEADER ═══ -->
+<section id="subheader" class="jarallax text-light">
+    <img src="~/images/background/2.jpg" class="jarallax-img" alt="">
+    <div class="center-y relative text-center">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12 text-center">
+                    <h1>Araç Detayı</h1>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══ ARAÇ DETAYLARI ═══ -->
+<section id="section-car-details">
+    <div class="container">
+        <div class="row g-5">
+
+            <!-- Görsel -->
+            <div class="col-lg-6">
+                <div class="rounded-3 overflow-hidden shadow-soft">
+                    @if (!string.IsNullOrEmpty(Model.ImageUrl))
+                    {
+                        <img src="@Model.ImageUrl" alt="@Model.PlateNumber" class="img-fluid w-100" style="object-fit:cover;max-height:420px;">
+                    }
+                    else
+                    {
+                        <img src="~/images/cars/jeep-renegade.jpg" alt="" class="img-fluid w-100" style="object-fit:cover;max-height:420px;">
+                    }
+                </div>
+
+                @if (!Model.IsAvailable)
+                {
+                    <div class="alert alert-warning mt20">
+                        <i class="fa fa-exclamation-triangle"></i> Bu araç şu anda müsait değil.
+                    </div>
+                }
+            </div>
+
+            <!-- Özellikler -->
+            <div class="col-lg-3">
+                <h3>@(Model.Category?.CategoryName ?? "Araç") @Model.Year</h3>
+                <p>Plaka: <strong>@Model.PlateNumber</strong> @(string.IsNullOrEmpty(Model.VIN) ? "" : $"— Şasi No: {Model.VIN}")</p>
+
+                <div class="spacer-10"></div>
+
+                <h4>Teknik Özellikler</h4>
+                <div class="de-spec">
+                    <div class="d-row">
+                        <span class="d-title">Kategori</span>
+                        <span class="d-value">@(Model.Category?.CategoryName ?? "—")</span>
+                    </div>
+                    <div class="d-row">
+                        <span class="d-title">Koltuk Sayısı</span>
+                        <span class="d-value">@Model.SeatCount kişi</span>
+                    </div>
+                    <div class="d-row">
+                        <span class="d-title">Bagaj Kapasitesi</span>
+                        <span class="d-value">@Model.LuggageCount bavul</span>
+                    </div>
+                    <div class="d-row">
+                        <span class="d-title">Yakıt Tipi</span>
+                        <span class="d-value">@Model.FuelType</span>
+                    </div>
+                    <div class="d-row">
+                        <span class="d-title">Model Yılı</span>
+                        <span class="d-value">@Model.Year</span>
+                    </div>
+                    <div class="d-row">
+                        <span class="d-title">Kilometre</span>
+                        <span class="d-value">@Model.Kilometer.ToString("N0") km</span>
+                    </div>
+                    <div class="d-row">
+                        <span class="d-title">Şube</span>
+                        <span class="d-value">@(Model.Branch?.BranchName ?? "—")</span>
+                    </div>
+                    <div class="d-row">
+                        <span class="d-title">Durum</span>
+                        <span class="d-value">
+                            @if (Model.IsAvailable)
+                            {
+                                <span class="text-success fw-bold">Müsait</span>
+                            }
+                            else
+                            {
+                                <span class="text-danger fw-bold">Müsait Değil</span>
+                            }
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Fiyat + Rezervasyon -->
+            <div class="col-lg-3">
+                <div class="de-price text-center">
+                    Günlük Ücret
+                    <h3>@Model.DailyPrice.ToString("N0") ₺</h3>
+                </div>
+
+                <div class="spacer-30"></div>
+
+                <div class="de-box mb25">
+                    <h4>Depozito Bilgisi</h4>
+                    <p class="mb20">
+                        Bu araç için <strong>@Model.DepositAmount.ToString("N0") ₺</strong> depozito alınacaktır.
+                        Depozito, araç teslim alındığında iade edilir.
+                    </p>
+
+                    @if (Model.IsAvailable && Model.IsActive)
+                    {
+                        <a asp-controller="Booking" asp-action="Index" asp-route-carId="@Model.CarId" class="btn-main btn-fullwidth">
+                            <i class="fa fa-calendar-check"></i> Şimdi Rezervasyon Yap
+                        </a>
+                    }
+                    else
+                    {
+                        <button class="btn-main btn-fullwidth" disabled style="opacity:.5;cursor:not-allowed;">
+                            Şu Anda Müsait Değil
+                        </button>
+                    }
+
+                    <div class="spacer-20"></div>
+
+                    <p class="small text-muted">
+                        <i class="fa fa-info-circle"></i> Rezervasyon onayından sonra mail ile bilgilendirileceksiniz.
+                    </p>
+                </div>
+
+                <a asp-controller="Car" asp-action="CarList" class="btn-line btn-fullwidth">
+                    <i class="fa fa-arrow-left"></i> Diğer Araçlara Dön
+                </a>
+            </div>
+
+        </div>
+    </div>
+</section>

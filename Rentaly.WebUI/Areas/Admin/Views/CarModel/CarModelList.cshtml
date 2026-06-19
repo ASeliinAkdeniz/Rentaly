@@ -1,0 +1,440 @@
+﻿@model List<Rentaly.EntityLayer.Entities.CarModel>
+@{
+    ViewData["Title"] = "Modeller";
+    ViewData["ActiveMenu"] = "CarModel";
+    ViewData["BreadcrumbParent"] = "Araç Yönetimi";
+    Layout = "_AdminLayout";
+    var brands = ViewBag.Brands as IEnumerable<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>
+                 ?? Enumerable.Empty<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>();
+}
+
+<style>
+    .toolbar { background: #fff; border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 18px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
+    .search-wrap { position: relative; flex: 1; min-width: 200px; }
+    .search-wrap i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 14px; pointer-events: none; }
+    .search-wrap input { width: 100%; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 9px 12px 9px 36px; font-size: 13.5px; color: var(--text-primary); background: var(--bg); outline: none; transition: var(--transition); }
+    .search-wrap input:focus { border-color: var(--accent2); background: #fff; box-shadow: 0 0 0 3px rgba(13,122,69,0.1); }
+    .empty-state { padding: 64px 20px; text-align: center; background: #fff; border: 1px solid var(--border); border-radius: var(--radius); }
+    .empty-icon { width: 72px; height: 72px; background: var(--bg2); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; color: var(--navy); margin: 0 auto 18px; }
+    .paging-wrap { display: flex; align-items: center; justify-content: space-between; padding: 14px 4px; flex-wrap: wrap; gap: 8px; }
+    .paging-info { font-size: 13px; color: var(--text-muted); }
+    .paging-btns { display: flex; gap: 4px; }
+    .page-btn { width: 32px; height: 32px; border: 1px solid var(--border); background: #fff; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; cursor: pointer; transition: var(--transition); color: var(--text-primary); }
+    .page-btn:hover { background: var(--bg2); border-color: var(--accent2); color: var(--accent2); }
+    .page-btn.active { background: var(--navy); border-color: var(--navy); color: #fff; }
+    .page-btn:disabled { opacity: .4; cursor: not-allowed; }
+    .action-btn-edit { display:inline-flex;align-items:center;gap:5px;background:#fef3c7;color:#92400e;border:none;padding:6px 12px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s; }
+    .action-btn-edit:hover { background:#f59e0b;color:#fff; }
+    .action-btn-delete { display:inline-flex;align-items:center;gap:5px;background:#fee2e2;color:#be123c;border:none;padding:6px 12px;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s; }
+    .action-btn-delete:hover { background:var(--danger);color:#fff; }
+</style>
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Model Listesi</h1>
+        <p class="page-subtitle">Araç modellerini görüntüleyin ve yönetin.</p>
+    </div>
+    <button type="button" class="btn-add" onclick="openCreateModal()">
+        <i class="ti ti-plus"></i> Yeni Model
+    </button>
+</div>
+
+<div class="stats-grid" style="margin-bottom:22px;">
+    <div class="stat-card">
+        <div class="stat-icon navy"><i class="ti ti-box"></i></div>
+        <div>
+            <div class="stat-label">Toplam Model</div>
+            <div class="stat-value">@Model.Count()</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon green"><i class="ti ti-circle-check"></i></div>
+        <div>
+            <div class="stat-label">Gösterilen</div>
+            <div class="stat-value" id="statFiltered">@Model.Count()</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon amber"><i class="ti ti-bookmark"></i></div>
+        <div>
+            <div class="stat-label">Farklı Marka</div>
+            <div class="stat-value">@Model.Select(m => m.BrandId).Distinct().Count()</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon rose"><i class="ti ti-clock"></i></div>
+        <div>
+            <div class="stat-label">Son Eklenen</div>
+            <div class="stat-value" style="font-size:14px;">@(Model.Any() ? Model.Last().ModelName : "—")</div>
+        </div>
+    </div>
+</div>
+
+<div class="toolbar">
+    <div class="search-wrap">
+        <i class="ti ti-search"></i>
+        <input type="text" id="modelSearch" placeholder="Model adı ara…" oninput="filterModels()" />
+    </div>
+    <select class="form-select" id="brandFilter" onchange="filterModels()" style="min-width:180px;font-size:13px;">
+        <option value="all">Tüm Markalar</option>
+        @foreach (var brand in brands)
+        {
+            <option value="@brand.Value">@brand.Text</option>
+        }
+    </select>
+    <button type="button" onclick="resetFilters()" class="btn-edit" style="white-space:nowrap;">
+        <i class="ti ti-rotate-left"></i> Sıfırla
+    </button>
+</div>
+
+<div class="table-card">
+    <div class="table-card-header">
+        <div class="table-card-title">Modeller</div>
+        <span class="badge-status navy" id="totalBadge">@Model.Count() Model</span>
+    </div>
+    <table class="admin-table" id="modelTable">
+        <thead>
+            <tr>
+                <th style="width:60px;">#</th>
+                <th>Model Adı</th>
+                <th>Marka</th>
+                <th style="width:180px;text-align:right;">İşlemler</th>
+            </tr>
+        </thead>
+        <tbody id="modelTableBody">
+            @foreach (var m in Model)
+            {
+                var brandName = brands.FirstOrDefault(b => b.Value == m.BrandId.ToString())?.Text ?? ("Marka #" + m.BrandId);
+                <tr data-id="@m.ModelId" data-name="@m.ModelName?.ToLower()" data-brand="@m.BrandId">
+                    <td>
+                        <span style="width:32px;height:32px;background:var(--bg2);color:var(--navy);border-radius:8px;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;">
+                            @m.ModelId
+                        </span>
+                    </td>
+                    <td>
+                        <div style="display:flex;align-items:center;gap:10px;">
+                            <div style="width:34px;height:34px;background:var(--bg2);border-radius:9px;display:flex;align-items:center;justify-content:center;color:var(--navy);">
+                                <i class="ti ti-box" style="font-size:15px;"></i>
+                            </div>
+                            <div>
+                                <div style="font-weight:600;font-size:14px;color:var(--text-primary);">@m.ModelName</div>
+                                <div style="font-size:11.5px;color:var(--text-muted);">Model #@m.ModelId</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="badge-status navy">@brandName</span>
+                    </td>
+                    <td>
+                        <div style="display:flex;gap:6px;justify-content:flex-end;">
+                            <button type="button" class="action-btn-edit"
+                                    onclick="openEditModal(@m.ModelId, '@m.ModelName', @m.BrandId)">
+                                <i class="ti ti-pencil"></i> Düzenle
+                            </button>
+                            <button type="button" class="action-btn-delete"
+                                    onclick="openDeleteModal(@m.ModelId, '@m.ModelName')">
+                                <i class="ti ti-trash"></i> Sil
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <div class="empty-state" id="emptyState" style="display:none;">
+        <div class="empty-icon"><i class="ti ti-box-off"></i></div>
+        <h6 style="font-weight:700;margin-bottom:6px;color:var(--text-primary);">Model Bulunamadı</h6>
+        <p style="font-size:13.5px;color:var(--text-muted);margin-bottom:14px;">Arama kriterinizle eşleşen model yok.</p>
+        <button type="button" onclick="resetFilters()" class="btn-add">
+            <i class="ti ti-rotate-left"></i> Filtreyi Temizle
+        </button>
+    </div>
+
+    <div class="paging-wrap" id="pagingWrap" style="display:none;padding:12px 18px;">
+        <div class="paging-info" id="pagingInfo">—</div>
+        <div class="paging-btns" id="pagingBtns"></div>
+    </div>
+</div>
+
+<!-- CREATE MODAL -->
+<div class="modal fade" id="createModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:460px;">
+        <div class="modal-content" style="border:none;border-radius:14px;">
+            <div class="modal-header" style="border-bottom:1px solid var(--border);padding:20px 24px;background:var(--bg2);border-radius:14px 14px 0 0;">
+                <div style="display:flex;align-items:center;gap:12px;">
+                    <div style="width:38px;height:38px;background:var(--navy);border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff;">
+                        <i class="ti ti-plus" style="font-size:18px;"></i>
+                    </div>
+                    <div>
+                        <h5 class="modal-title" style="font-size:15px;font-weight:700;color:var(--text-primary);margin:0;">Yeni Model Ekle</h5>
+                        <p style="font-size:11px;color:var(--text-muted);margin:0;">Araç modeli bilgilerini girin</p>
+                    </div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="createForm" asp-area="Admin" asp-controller="CarModel" asp-action="CreateCarModel" method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-body" style="padding:24px;">
+                    <div class="mb-3">
+                        <label class="form-label">Model Adı <span style="color:var(--danger);">*</span></label>
+                        <input type="text" name="ModelName" id="createModelName" class="form-control"
+                               placeholder="örn. Corolla, 3 Serisi, A4…" maxlength="100"
+                               oninput="updateCreateCount(this)" />
+                        <div style="display:flex;justify-content:flex-end;margin-top:4px;">
+                            <span style="font-size:11px;color:var(--text-muted);"><span id="createNameCount">0</span>/100</span>
+                        </div>
+                        <span id="createNameError" style="font-size:12px;color:var(--danger);display:none;">
+                            <i class="ti ti-alert-circle"></i> Model adı zorunludur.
+                        </span>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Marka <span style="color:var(--danger);">*</span></label>
+                        <select name="BrandId" id="createBrandId" class="form-select">
+                            <option value="">— Marka Seçin —</option>
+                            @foreach (var item in brands)
+                            {
+                                <option value="@item.Value">@item.Text</option>
+                            }
+                        </select>
+                        <span id="createBrandError" style="font-size:12px;color:var(--danger);display:none;">
+                            <i class="ti ti-alert-circle"></i> Marka seçimi zorunludur.
+                        </span>
+                    </div>
+                </div>
+                <div class="modal-footer" style="border-top:1px solid var(--border);padding:16px 24px;background:var(--bg2);border-radius:0 0 14px 14px;display:flex;justify-content:flex-end;gap:8px;">
+                    <button type="button" class="btn-edit" data-bs-dismiss="modal">
+                        <i class="ti ti-x"></i> Vazgeç
+                    </button>
+                    <button type="button" class="btn-add" onclick="submitCreate()">
+                        <i class="ti ti-check"></i> Kaydet
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="modal fade" id="editModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:460px;">
+        <div class="modal-content" style="border:none;border-radius:14px;">
+            <div class="modal-header" style="border-bottom:1px solid var(--border);padding:20px 24px;background:var(--bg2);border-radius:14px 14px 0 0;">
+                <div style="display:flex;align-items:center;gap:12px;">
+                    <div style="width:38px;height:38px;background:var(--navy);border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff;">
+                        <i class="ti ti-pencil" style="font-size:18px;"></i>
+                    </div>
+                    <div>
+                        <h5 class="modal-title" style="font-size:15px;font-weight:700;color:var(--text-primary);margin:0;">Model Düzenle</h5>
+                        <p style="font-size:11px;color:var(--text-muted);margin:0;" id="editModalSubtitle">Model bilgilerini güncelleyin</p>
+                    </div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form asp-area="Admin" asp-controller="CarModel" asp-action="UpdateCarModel" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" id="editModelId" name="ModelId" />
+                <div class="modal-body" style="padding:24px;">
+                    <div class="mb-3">
+                        <label class="form-label">Model Adı <span style="color:var(--danger);">*</span></label>
+                        <input type="text" name="ModelName" id="editModelName" class="form-control"
+                               maxlength="100" oninput="updateEditCount(this)" />
+                        <div style="display:flex;justify-content:flex-end;margin-top:4px;">
+                            <span style="font-size:11px;color:var(--text-muted);"><span id="editNameCount">0</span>/100</span>
+                        </div>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Marka <span style="color:var(--danger);">*</span></label>
+                        <select name="BrandId" id="editBrandId" class="form-select">
+                            <option value="">— Marka Seçin —</option>
+                            @foreach (var item in brands)
+                            {
+                                <option value="@item.Value">@item.Text</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer" style="border-top:1px solid var(--border);padding:16px 24px;background:var(--bg2);border-radius:0 0 14px 14px;display:flex;justify-content:flex-end;gap:8px;">
+                    <button type="button" class="btn-edit" data-bs-dismiss="modal">
+                        <i class="ti ti-x"></i> Vazgeç
+                    </button>
+                    <button type="submit" class="btn-add">
+                        <i class="ti ti-check"></i> Güncelle
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- DELETE MODAL -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:400px;">
+        <div class="modal-content" style="border:none;border-radius:14px;">
+            <div class="modal-header" style="border-bottom:1px solid var(--border);padding:18px 22px;background:var(--bg2);border-radius:14px 14px 0 0;">
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <div style="width:34px;height:34px;background:#fee2e2;border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--danger);">
+                        <i class="ti ti-trash" style="font-size:16px;"></i>
+                    </div>
+                    <h5 class="modal-title" style="font-size:15px;font-weight:700;color:var(--text-primary);margin:0;">Model Sil</h5>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" style="padding:22px;">
+                <div style="display:flex;gap:14px;align-items:flex-start;">
+                    <div style="width:46px;height:46px;background:#fee2e2;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--danger);font-size:20px;flex-shrink:0;">
+                        <i class="ti ti-alert-triangle"></i>
+                    </div>
+                    <div>
+                        <p style="margin:0;font-size:14.5px;color:var(--text-primary);line-height:1.5;">
+                            <strong id="deleteModelName">bu modeli</strong> silmek istediğinizden emin misiniz?
+                        </p>
+                        <p style="margin:6px 0 0;font-size:13px;color:var(--text-muted);">Bu işlem geri alınamaz. İlgili araçlar etkilenebilir.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer" style="border-top:1px solid var(--border);padding:14px 22px;background:var(--bg2);border-radius:0 0 14px 14px;display:flex;justify-content:flex-end;gap:8px;">
+                <button type="button" class="btn-edit" data-bs-dismiss="modal">
+                    <i class="ti ti-x"></i> Vazgeç
+                </button>
+                <form id="deleteForm" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" id="deleteModelId" name="id" />
+                    <button type="submit" style="display:inline-flex;align-items:center;gap:7px;background:var(--danger);color:#fff;border:none;border-radius:9px;padding:9px 22px;font-size:13.5px;font-weight:700;cursor:pointer;">
+                        <i class="ti ti-trash"></i> Evet, Sil
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <script>document.addEventListener('DOMContentLoaded', () => showToast('@TempData["Success"]', 'success'));</script>
+}
+
+<script>
+    const PAGE_SIZE = 10;
+    let currentPage = 1;
+
+    function filterModels() {
+        const q = document.getElementById('modelSearch').value.toLowerCase().trim();
+        const brand = document.getElementById('brandFilter').value;
+        let visible = 0;
+        document.querySelectorAll('#modelTableBody tr[data-id]').forEach(row => {
+            const matchQ = !q || (row.dataset.name || '').includes(q) || row.dataset.id.includes(q);
+            const matchBrand = brand === 'all' || row.dataset.brand === brand;
+            const show = matchQ && matchBrand;
+            row.setAttribute('data-show', show ? '1' : '0');
+            if (show) visible++;
+        });
+        document.getElementById('statFiltered').textContent = visible;
+        document.getElementById('totalBadge').textContent = visible + ' Model';
+        document.getElementById('emptyState').style.display = visible === 0 ? 'block' : 'none';
+        currentPage = 1;
+        buildPaging();
+    }
+
+    function resetFilters() {
+        document.getElementById('modelSearch').value = '';
+        document.getElementById('brandFilter').value = 'all';
+        filterModels();
+        showToast('Filtreler sıfırlandı.', 'success');
+    }
+
+    function buildPaging() {
+        const rows = [...document.querySelectorAll('#modelTableBody tr[data-id]')];
+        const visible = rows.filter(r => r.getAttribute('data-show') !== '0');
+        const total = visible.length;
+        const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+        if (currentPage > pages) currentPage = pages;
+        rows.forEach(r => r.style.display = 'none');
+        visible.forEach((r, i) => {
+            if (i >= (currentPage - 1) * PAGE_SIZE && i < currentPage * PAGE_SIZE) r.style.display = '';
+        });
+        const from = total === 0 ? 0 : (currentPage - 1) * PAGE_SIZE + 1;
+        const to = Math.min(currentPage * PAGE_SIZE, total);
+        document.getElementById('pagingInfo').textContent = total > 0 ? (from + '-' + to + ' / toplam ' + total + ' model') : '0 model';
+        const btns = document.getElementById('pagingBtns');
+        btns.innerHTML = '';
+        const prev = makeBtn('<i class="ti ti-chevron-left" style="font-size:11px;"></i>', () => goPage(currentPage - 1));
+        if (currentPage === 1) prev.disabled = true;
+        btns.appendChild(prev);
+        for (let p = 1; p <= pages; p++) {
+            const btn = makeBtn(p, () => goPage(p));
+            if (p === currentPage) btn.classList.add('active');
+            btns.appendChild(btn);
+        }
+        const next = makeBtn('<i class="ti ti-chevron-right" style="font-size:11px;"></i>', () => goPage(currentPage + 1));
+        if (currentPage === pages) next.disabled = true;
+        btns.appendChild(next);
+        document.getElementById('pagingWrap').style.display = total <= PAGE_SIZE && pages === 1 ? 'none' : 'flex';
+    }
+
+    function makeBtn(html, fn) {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'page-btn';
+        b.innerHTML = html;
+        b.addEventListener('click', fn);
+        return b;
+    }
+
+    function goPage(p) {
+        const visible = [...document.querySelectorAll('#modelTableBody tr[data-id]')].filter(r => r.getAttribute('data-show') !== '0');
+        const pages = Math.max(1, Math.ceil(visible.length / PAGE_SIZE));
+        currentPage = Math.max(1, Math.min(pages, p));
+        buildPaging();
+    }
+
+    function openCreateModal() {
+        document.getElementById('createModelName').value = '';
+        document.getElementById('createBrandId').value = '';
+        document.getElementById('createNameCount').textContent = '0';
+        document.getElementById('createNameError').style.display = 'none';
+        document.getElementById('createBrandError').style.display = 'none';
+        new bootstrap.Modal(document.getElementById('createModal')).show();
+    }
+
+    function submitCreate() {
+        const name = document.getElementById('createModelName').value.trim();
+        const brand = document.getElementById('createBrandId').value;
+        document.getElementById('createNameError').style.display = !name ? 'block' : 'none';
+        document.getElementById('createBrandError').style.display = !brand ? 'block' : 'none';
+        if (!name || !brand) return;
+        document.getElementById('createForm').submit();
+    }
+
+    function updateCreateCount(el) {
+        document.getElementById('createNameCount').textContent = el.value.length;
+    }
+
+    function openEditModal(id, name, brandId) {
+        document.getElementById('editModelId').value = id;
+        document.getElementById('editModelName').value = name;
+        document.getElementById('editNameCount').textContent = name.length;
+        document.getElementById('editModalSubtitle').textContent = name + ' — bilgilerini güncelleyin';
+        const sel = document.getElementById('editBrandId');
+        for (let i = 0; i < sel.options.length; i++) {
+            sel.options[i].selected = parseInt(sel.options[i].value) === parseInt(brandId);
+        }
+        new bootstrap.Modal(document.getElementById('editModal')).show();
+    }
+
+    function updateEditCount(el) {
+        document.getElementById('editNameCount').textContent = el.value.length;
+    }
+
+    function openDeleteModal(id, name) {
+        document.getElementById('deleteModelName').textContent = '"' + name + '"';
+        document.getElementById('deleteModelId').value = id;
+        document.getElementById('deleteForm').action = '/Admin/CarModel/DeleteCarModel/' + id;
+        new bootstrap.Modal(document.getElementById('deleteModal')).show();
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('#modelTableBody tr[data-id]').forEach(r => r.setAttribute('data-show', '1'));
+        buildPaging();
+    });
+</script>

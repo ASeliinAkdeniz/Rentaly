@@ -1,0 +1,513 @@
+﻿@model Rentaly.WebUI.Areas.Admin.Models.DashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard";
+    ViewData["ActiveMenu"] = "Dashboard";
+    Layout = "_AdminLayout";
+}
+
+<style>
+    .dash-grid-4 {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 14px;
+        margin-bottom: 22px;
+    }
+
+    .dash-grid-2 {
+        display: grid;
+        grid-template-columns: 1.4fr 1fr;
+        gap: 18px;
+        margin-bottom: 22px;
+        align-items: start;
+    }
+
+    .dash-card {
+        background: #fff;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-sm);
+        overflow: hidden;
+    }
+
+    .dash-card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px 20px;
+        border-bottom: 1px solid var(--bg2);
+    }
+
+    .dash-card-title {
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--text-primary);
+    }
+
+    .dash-card-body {
+        padding: 18px 20px;
+    }
+
+    .big-stat {
+        background: #fff;
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 18px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        transition: var(--transition);
+    }
+
+        .big-stat:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+
+    .big-stat-icon {
+        width: 46px;
+        height: 46px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 21px;
+        flex-shrink: 0;
+    }
+
+        .big-stat-icon.navy {
+            background: var(--bg2);
+            color: var(--navy);
+        }
+
+        .big-stat-icon.green {
+            background: #d1fae5;
+            color: #059669;
+        }
+
+        .big-stat-icon.amber {
+            background: #fef3c7;
+            color: #b45309;
+        }
+
+        .big-stat-icon.rose {
+            background: #ffe4e6;
+            color: #be123c;
+        }
+
+    .big-stat-label {
+        font-size: 11.5px;
+        color: var(--text-muted);
+        font-weight: 500;
+        margin-bottom: 2px;
+    }
+
+    .big-stat-val {
+        font-size: 22px;
+        font-weight: 800;
+        color: var(--text-primary);
+        line-height: 1;
+    }
+
+    .big-stat-sub {
+        font-size: 11px;
+        color: var(--accent2);
+        margin-top: 4px;
+        font-weight: 500;
+    }
+
+    .secondary-stats {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+        margin-bottom: 22px;
+    }
+
+    .sec-stat {
+        background: #fff;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 14px 16px;
+        text-align: center;
+    }
+
+    .sec-stat-val {
+        font-size: 19px;
+        font-weight: 800;
+        color: var(--text-primary);
+    }
+
+    .sec-stat-label {
+        font-size: 11.5px;
+        color: var(--text-muted);
+        margin-top: 3px;
+    }
+
+    .bar-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 12px;
+    }
+
+    .bar-label {
+        font-size: 12.5px;
+        color: var(--text-primary);
+        font-weight: 500;
+        width: 110px;
+        flex-shrink: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .bar-track {
+        flex: 1;
+        height: 9px;
+        background: var(--bg2);
+        border-radius: 20px;
+        overflow: hidden;
+    }
+
+    .bar-fill {
+        height: 100%;
+        background: linear-gradient(90deg, var(--navy), var(--accent2));
+        border-radius: 20px;
+        transition: width 0.6s ease;
+    }
+
+    .bar-count {
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--text-primary);
+        width: 28px;
+        text-align: right;
+        flex-shrink: 0;
+    }
+
+    .status-pill-row {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 4px;
+    }
+
+    .status-pill {
+        flex: 1;
+        min-width: 100px;
+        padding: 12px 14px;
+        border-radius: var(--radius-sm);
+        text-align: center;
+    }
+
+        .status-pill .num {
+            font-size: 20px;
+            font-weight: 800;
+        }
+
+        .status-pill .lbl {
+            font-size: 11px;
+            font-weight: 600;
+            margin-top: 2px;
+        }
+
+        .status-pill.pending {
+            background: #fef3c7;
+        }
+
+            .status-pill.pending .num, .status-pill.pending .lbl {
+                color: #92400e;
+            }
+
+        .status-pill.approved {
+            background: #d1fae5;
+        }
+
+            .status-pill.approved .num, .status-pill.approved .lbl {
+                color: #065f46;
+            }
+
+        .status-pill.rejected {
+            background: #ffe4e6;
+        }
+
+            .status-pill.rejected .num, .status-pill.rejected .lbl {
+                color: #991b1b;
+            }
+
+    .recent-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+        .recent-table th {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-weight: 600;
+            padding: 8px 10px;
+            text-align: left;
+            background: var(--bg2);
+        }
+
+        .recent-table td {
+            font-size: 12.5px;
+            color: var(--text-primary);
+            padding: 10px 10px;
+            border-top: 1px solid var(--bg2);
+        }
+
+        .recent-table tr:hover td {
+            background: #fafbfe;
+        }
+
+    .empty-mini {
+        text-align: center;
+        padding: 30px 10px;
+        color: var(--text-muted);
+        font-size: 13px;
+    }
+
+    @@media (max-width: 1100px) {
+        .dash-grid-4, .secondary-stats {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .dash-grid-2 {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @@media (max-width: 575px) {
+        .dash-grid-4, .secondary-stats {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+</style>
+
+<!-- Page Header -->
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Genel Bakış</h1>
+        <p class="page-subtitle">Hoş geldin! İşletmenin güncel durumunu burada görebilirsin.</p>
+    </div>   
+</div>
+
+<!-- Ana 4 Stat Kartı -->
+<div class="dash-grid-4">
+    <div class="big-stat">
+        <div class="big-stat-icon navy"><i class="ti ti-car"></i></div>
+        <div>
+            <div class="big-stat-label">Toplam Araç</div>
+            <div class="big-stat-val">@Model.TotalCars</div>
+            <div class="big-stat-sub">@Model.AvailableCars müsait</div>
+        </div>
+    </div>
+    <div class="big-stat">
+        <div class="big-stat-icon green"><i class="ti ti-calendar-check"></i></div>
+        <div>
+            <div class="big-stat-label">Toplam Rezervasyon</div>
+            <div class="big-stat-val">@Model.TotalRentals</div>
+            <div class="big-stat-sub">@Model.PendingRentals bekliyor</div>
+        </div>
+    </div>
+    <div class="big-stat">
+        <div class="big-stat-icon amber"><i class="ti ti-users"></i></div>
+        <div>
+            <div class="big-stat-label">Toplam Müşteri</div>
+            <div class="big-stat-val">@Model.TotalCustomers</div>
+            <div class="big-stat-sub">@Model.TotalBranches şubede</div>
+        </div>
+    </div>
+    <div class="big-stat">
+        <div class="big-stat-icon rose"><i class="ti ti-currency-lira"></i></div>
+        <div>
+            <div class="big-stat-label">Toplam Gelir</div>
+            <div class="big-stat-val">@Model.TotalRevenue.ToString("N0") ₺</div>
+            <div class="big-stat-sub">Onaylanan rezervasyonlardan</div>
+        </div>
+    </div>
+</div>
+
+<!-- İkincil İstatistikler -->
+<div class="secondary-stats">
+    <div class="sec-stat">
+        <div class="sec-stat-val">@Model.TotalBrands</div>
+        <div class="sec-stat-label">Marka</div>
+    </div>
+    <div class="sec-stat">
+        <div class="sec-stat-val">@Model.TotalCategories</div>
+        <div class="sec-stat-label">Kategori</div>
+    </div>
+    <div class="sec-stat">
+        <div class="sec-stat-val">@Model.UnavailableCars</div>
+        <div class="sec-stat-label">Müsait Olmayan Araç</div>
+    </div>
+    <div class="sec-stat">
+        <div class="sec-stat-val">@Model.AverageDailyPrice.ToString("N0") ₺</div>
+        <div class="sec-stat-label">Ort. Günlük Fiyat</div>
+    </div>
+</div>
+
+<!-- Ana içerik: Sol geniş + Sağ dar -->
+<div class="dash-grid-2">
+
+    <!-- SOL: Son Rezervasyonlar -->
+    <div class="dash-card">
+        <div class="dash-card-header">
+            <div class="dash-card-title">Son Rezervasyonlar</div>
+            <a asp-area="Admin" asp-controller="Rental" asp-action="RentalList" style="font-size:12px;color:var(--accent2);font-weight:600;text-decoration:none;">
+                Tümünü Gör <i class="ti ti-arrow-right" style="font-size:12px;"></i>
+            </a>
+        </div>
+        <div class="dash-card-body" style="padding:0;">
+            @if (Model.RecentRentals.Any())
+            {
+                <table class="recent-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Müşteri ID</th>
+                            <th>Araç ID</th>
+                            <th>Tarih</th>
+                            <th>Durum</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var r in Model.RecentRentals)
+                        {
+                            var statusClass = r.Status switch
+                            {
+                                "Onaylandı" => "green",
+                                "Reddedildi" => "red",
+                                _ => "amber"
+                            };
+                            <tr>
+                                <td>#@r.RentalId</td>
+                                <td>#@r.CustomerId</td>
+                                <td>#@r.CarId</td>
+                                <td>@r.PickupDate.ToString("dd.MM.yyyy")</td>
+                                <td><span class="badge-status @statusClass">@r.Status</span></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <div class="empty-mini">
+                    <i class="ti ti-calendar-off" style="font-size:28px;display:block;margin-bottom:8px;opacity:.4;"></i>
+                    Henüz rezervasyon bulunmuyor.
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- SAĞ: Rezervasyon Durumu -->
+    <div class="dash-card">
+        <div class="dash-card-header">
+            <div class="dash-card-title">Rezervasyon Durumu</div>
+        </div>
+        <div class="dash-card-body">
+            <div class="status-pill-row">
+                <div class="status-pill pending">
+                    <div class="num">@Model.PendingRentals</div>
+                    <div class="lbl">Bekliyor</div>
+                </div>
+                <div class="status-pill approved">
+                    <div class="num">@Model.ApprovedRentals</div>
+                    <div class="lbl">Onaylandı</div>
+                </div>
+                <div class="status-pill rejected">
+                    <div class="num">@Model.RejectedRentals</div>
+                    <div class="lbl">Reddedildi</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- İkinci satır: Kategori + Şube dağılımı -->
+<div class="dash-grid-2">
+
+    <!-- Kategoriye göre araç dağılımı -->
+    <div class="dash-card">
+        <div class="dash-card-header">
+            <div class="dash-card-title">Kategoriye Göre Araç Dağılımı</div>
+        </div>
+        <div class="dash-card-body">
+            @if (Model.CarsByCategory.Any())
+            {
+                var maxCat = Model.CarsByCategory.Max(c => c.Count);
+                @foreach (var c in Model.CarsByCategory)
+                {
+                    var pct = maxCat > 0 ? (c.Count * 100 / maxCat) : 0;
+                    <div class="bar-row">
+                        <div class="bar-label">@c.CategoryName</div>
+                        <div class="bar-track"><div class="bar-fill" style="width:@(pct)%;"></div></div>
+                        <div class="bar-count">@c.Count</div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="empty-mini">Henüz araç eklenmemiş.</div>
+            }
+        </div>
+    </div>
+
+    <!-- Şubeye göre araç dağılımı -->
+    <div class="dash-card">
+        <div class="dash-card-header">
+            <div class="dash-card-title">Şubeye Göre Araç Dağılımı</div>
+        </div>
+        <div class="dash-card-body">
+            @if (Model.CarsByBranch.Any())
+            {
+                var maxBr = Model.CarsByBranch.Max(b => b.Count);
+                @foreach (var b in Model.CarsByBranch)
+                {
+                    var pct = maxBr > 0 ? (b.Count * 100 / maxBr) : 0;
+                    <div class="bar-row">
+                        <div class="bar-label">@b.BranchName</div>
+                        <div class="bar-track"><div class="bar-fill" style="width:@(pct)%;"></div></div>
+                        <div class="bar-count">@b.Count</div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="empty-mini">Henüz şube eklenmemiş.</div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Hızlı Erişim -->
+<div class="dash-card">
+    <div class="dash-card-header">
+        <div class="dash-card-title">Hızlı Erişim</div>
+    </div>
+    <div class="dash-card-body">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;">
+            <a asp-area="Admin" asp-controller="Car" asp-action="CreateCar"
+               style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:16px;border:1px solid var(--border);border-radius:var(--radius-sm);text-decoration:none;color:var(--text-primary);transition:var(--transition);">
+                <i class="ti ti-car-suv" style="font-size:22px;color:var(--navy);"></i>
+                <span style="font-size:12.5px;font-weight:600;">Araç Ekle</span>
+            </a>
+            <a asp-area="Admin" asp-controller="Customer" asp-action="CreateCustomer"
+               style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:16px;border:1px solid var(--border);border-radius:var(--radius-sm);text-decoration:none;color:var(--text-primary);transition:var(--transition);">
+                <i class="ti ti-user-plus" style="font-size:22px;color:var(--navy);"></i>
+                <span style="font-size:12.5px;font-weight:600;">Müşteri Ekle</span>
+            </a>
+            <a asp-area="Admin" asp-controller="Branch" asp-action="CreateBranch"
+               style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:16px;border:1px solid var(--border);border-radius:var(--radius-sm);text-decoration:none;color:var(--text-primary);transition:var(--transition);">
+                <i class="ti ti-building-store" style="font-size:22px;color:var(--navy);"></i>
+                <span style="font-size:12.5px;font-weight:600;">Şube Ekle</span>
+            </a>
+            <a asp-area="Admin" asp-controller="Rental" asp-action="RentalList"
+               style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:16px;border:1px solid var(--border);border-radius:var(--radius-sm);text-decoration:none;color:var(--text-primary);transition:var(--transition);">
+                <i class="ti ti-calendar-check" style="font-size:22px;color:var(--navy);"></i>
+                <span style="font-size:12.5px;font-weight:600;">Rezervasyonlar</span>
+            </a>
+        </div>
+    </div>
+</div>
